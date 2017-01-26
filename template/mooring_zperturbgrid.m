@@ -1,15 +1,17 @@
 function [zgrid_perturb, time_2min] = mooring_zperturbgrid(moordir, moorid, moorsensors)
-%
-% [z_1m_perturb, time_2min] = MOORING_ZPERTURBGRID()
+% [z_1m_perturb, time_2min] = MOORING_ZPERTURBGRID(moordir, moorid, moorsensors)
 %
 %  inputs:
-%    - moordir is the directory where the mooring data is located.
-%    - moorid is the mooring code (e.g. T4).
-%    - moorsensors:
+%    - moordir: directory where the mooring data is located.
+%    - moorid: mooring name.
+%    - moorsensors: struct variable with the serial number
+%                   of all sensors on the mooring.
 % 
 %  outputs:
+%    -
+%    -
 %
-% This function....
+% Function MOORING_ZPERTURBGRID
 %
 % Inside this function we use the script containing info about
 % all instruments in the mooring moorid. It is assumed this
