@@ -1,0 +1,42 @@
+% Oceanography toolbox  (WHOI)
+%        - R. Pawlowicz 21/May/92 (rich@boreas.whoi.edu)
+%
+%  Physical Properties
+%
+%    adiabattempgrad   - adiabatic temperature gradent
+%    bvfreq            - Bouyancy (Brunt-Vaisala) frequency
+%    depth             - latitude-dependent pressure-to-depth conv.
+%    potentialtemp     - potential temperature
+%    pressure          - latitude-dependent depth-to-pressure conv.
+%    soundspeed        - speed of sound in seawater (various formulas)
+%    swcp              - Specific heat capacity of seater
+%    swfreezetemp      - Freezing point of seawater
+%    swstate           - Equation of State (and derivatives)
+%    
+%  Geographical/Geometrical Properties
+%
+%     dist             - geodesics and distances for points on
+%                        the earth using various spheroids
+%     inside           - point-in-polygon problem
+%     linterp          - linear interpolation
+%
+%  Special Plots
+%
+%     map              - World map (in one of 3 projections)
+%     stickplot        - For vector time series
+%     tsdiagram        - draws a T-S diagram with density contours
+%     whoi             - adds a whoi logo to any plot!
+%
+%  Miscellaneous
+%
+%     axcorr           - Auto- and Cross correlations of real and
+%                        complex time series with significance level
+%     integral         - Time series integration using Simpsons Rule
+%     geodesics        - demo for map, dist, and whoi
+%     indemo           - demo for inside
+%     stickdemo        - demo for stickplot
+%
+% If you have problems with any of these routines (or if you have
+% comments, tell me = rich@boreas.whoi.edu )
+
+
