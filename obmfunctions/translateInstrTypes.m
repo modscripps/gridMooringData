@@ -33,13 +33,15 @@ function listout = translateInstrTypes(listin)
 % Olavo Badaro Marques.
 
 
-%% Create a map object, creating the association between
-% the entries of possibleInput and possibleOutput:
+%% Create a map object, creating the association between the entries
+% of possibleInput and possibleOutput. If input does not match any
+% entry of possibleInput, then output will be the same as input.
+% Note that elements of valueOutput MUST not have lower case letters:
 
-possibleInput = {'MP', 'RDIadcp', 'SBE37', 'SBE56', 'RBRSolo'};
-possibleOutput = {'MP', 'ADCP',   'SBE',   'SBE',   'SBE'};
+keyInput = {'RDIadcp', 'SBE37', 'SBE56', 'RBRSolo', 'RBRConcerto'};
+valueOutput = {'ADCP',   'SBE',   'SBE', 'RBRSOLO', 'RBRCONCERTO'};
 
-instrumentMap = containers.Map(possibleInput, possibleOutput);
+instrumentMap = containers.Map(keyInput, valueOutput);
 
 
 %% Assign to the output variable according to the map instrumentMap:
@@ -52,19 +54,17 @@ listout = cell(1, N);
 % Loop over elements of the input:
 for i = 1:N
     
-    % Assign to the output only if listin{i}
-    % matches with an element possibleInput:
-    if any(strcmp(possibleInput, listin{i}))
+    % Use map if listin{i} matches with
+    % an element possibleInput:
+    if any(strcmp(keyInput, listin{i}))
         
         listout{i} = instrumentMap(listin{i});
      
-	% Otherwise, gives an error:
+	% Otherwise, pass input to output
+    % (with upper case letters only):
     else
         
-        error(['Instrument type ' listin{i} ' has no '        ...
-                'translation. You need to add ' listin{i} ' ' ...
-                'to the possibleInput and possibleOutput '    ...
-                'variables inside the function ' mfilename '.m.'])
+        listout{i} = upper(listin{i});
         
     end
     
