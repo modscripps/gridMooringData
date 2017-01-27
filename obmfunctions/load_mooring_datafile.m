@@ -75,6 +75,14 @@ switch instrtype
         
         dataloaded = load(fullfile(dirpath, flstrc.name));
         
+    case 'MP' % McLane Profiler
+        
+        dirpath = fullfile(moordir, 'MP', ['sn' num2str(sn)], 'processed');
+        flullpath = fullfile(dirpath, ['MPall_*_sn' num2str(sn) '.mat']);
+        flstrc = dir(flullpath);
+        
+        dataloaded = load(fullfile(dirpath, flstrc.name));
+        
     otherwise
         
         error(['Loading a ' instrtype ' instrument has not been ' ...
