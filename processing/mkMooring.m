@@ -38,6 +38,7 @@ for idx = 1 : length(VarNames)
      Mooring.(name)  = nan;
 end
 
+
 %% updating Mooring from FP
 AllNames = [InfoNames VarNames];
 for idx = 1 : length(AllNames)
@@ -49,13 +50,28 @@ end
 Mooring.UID = ['Mooring-' Mooring.Project '-' Mooring.SN];
 
 
+
 %% setting Mooring's instrument list
-InstrumentList = {'MP' 'SBE' 'ADCP'};
-Mooring.InstrumentList    = InstrumentList;
-Mooring.InstrumentNumber  = zeros( size(InstrumentList) );
+
+if ~isfield(FP, 'InstrumentList')
+    error('Input does not have field InstrumentList.')
+    % before Jan/2017, InstrumentList did not come from
+    % FP. Instead it was defined here as
+    % InstrumentList = {'MP' 'SBE' 'ADCP'};
+end
+
+Mooring.InstrumentList   = FP.InstrumentList;
+Mooring.InstrumentNumber = zeros(size(FP.InstrumentList));
+
 
 %% DataList
 Mooring.DataList  = {};
 Mooring.DataNumber = 0;
+
+
+%% Set Mooring Directories
+
+Mooring.Figure_dir = FP.Figure_dir;
+Mooring.Data_dir = FP.Data_dir;
 
 return
