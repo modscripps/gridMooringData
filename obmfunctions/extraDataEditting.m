@@ -1,60 +1,109 @@
-function dataout = extraDataEditting(datain, datatype)
-% dataout = EXTRADATAEDITTING(datain, datatype)
+function datainstr = extraDataEditting(datainstr, datatype, lat)
+% datainstr = EXTRADATAEDITTING(datain, datatype)
 %
 %   inputs:
-%       - datain: data structure.
+%       - datainstr: data structure of an instrument on a mooring.
 %       - datatype: type of instrument, as defined by the script with
 %                   info for all instruments on the mooring.
+%       - latitude: latitude, required to convert pressure into depth.
 %
 %   outputs:
-%       - dataout: data structure with additional editting/processing.
+%       - datainstr: data structure with additional editting/processing.
 %
-% Function EXTRADATAEDITTING does some minor editting such as
-% transposing and renaming variables, removing NaNs and
-% Estimating depth from pressure.
+% Function EXTRADATAEDITTING does some minor editting such as:
+% transposing and renaming variables; removing NaNs;
+% estimating depth from pressure (using the seawater toolbox)
+% as well as salinity/potential density when conductivity is measured.
+%
+% It is important that any time series in a vector (as opposed to
+% a matrix, where each column is a different time) is output by
+% this function as a ROW vector.
+%
+% IMPORTANT NOTE: in the editting below, some assuptions are made
+%                 about the format of the data. The format may
+%                 be defined by the MOD group data processing routines.
+%                 There is a chance that data that has not been
+%                 processed by those routines will not be editted
+%                 correctly by the function EXTRADATAEDITTING.
 %
 % Olavo Badaro Marques.
 
 
-%% Load the data:
+%% For each type of instrument does a different of editting:
 
-switch instrtype
+switch datatype
 
     case 'SBE37'
+        
+        % Make sure vectors are row vector, rename
+        % variables and compute yday from datenum:
+        datainstr.time = datainstr.time(:)';
+        datainstr.yday = datenum2yday(datainstr.time);
+        datainstr.t = datainstr.T(:)';
+        
+        datainstr = rmfield(datainstr, 'T');
+        
+        % Compute depth from pressure:
+        datainstr.P = datainstr.P(:)';
+        datainstr.z = sw_dpth(datainstr.P, lat);
+                       
+        % NaN conductivities less than or equal to 0
+        % (otherwise there might be complex density values):
+        datainstr.C = datainstr.C(:)';
+        datainstr.C(datainstr.C<=0) = NaN;
+        
+        % Compute salinity (including a factor of 10 to get
+        % the units right) and potential density (referenced
+        % to the surface):
+        datainstr.s = sw_salt(10*datainstr.C ./ sw_c3515, datainstr.t, datainstr.z);
+        datainstr.sgth = sw_pden(datainstr.s, datainstr.t, datainstr.P, 0) - 1000;
 
-        SBE_S37=load('./T7_Mooring_Data/SBE37/3638/SBE37_SN3638.mat');
-        SBE_S37=SBE_S37.dat;
-        SBE_S37.yday=datenum2yday(SBE_S37.time(:));
-        SBE_S37.t=SBE_S37.T;
-        %SBE_S37.s= some function of SBE_S37.C;
-        SBE_S37.z=SBE_S37.P; %I'm making an assumption here for shallow depth
-        SBE_S37.z=z_1m_perturb(86,:)+86;
-        SBE_S37.z=interp1(datenum2yday(time_2min),SBE_S37.z,SBE_S37.yday);
-                  
+
     case 'SBE39'
-        SBE_S39_3253.z=z_1m_perturb(1103,:)+1103;
-        SBE_S39_3253.t=SBE_S39_3253.temp';
-        SBE_S39_3253.yday=SBE_S39_3253.yday';
+
+        % Make sure vectors are row
+        % vector and rename variables:
+        datainstr.yday = datainstr.yday(:)';
+        datainstr.t = datainstr.temp(:)';
+        
+        datainstr = rmfield(datainstr, 'temp');
+        
+        % SBE39 THESE HAVE PRESSURE SENSORS SOMETIMES!!!
         
 	case 'SBE56'
 
-        SBE_S56=SBE_S56.dat;
-        SBE_S56.yday=datenum2yday(SBE_S56.time(:));
-        SBE_S56.t=SBE_S56.T;
-        SBE_S56.z=z_1m_perturb(50,:)+50;
-        SBE_S56.z=interp1(datenum2yday(time_2min),SBE_S56.z,SBE_S56.yday);
+        % Make sure vectors are row vector, rename
+        % variables and compute yday from datenum:
+        datainstr.time = datainstr.time(:)';
+        datainstr.yday = datenum2yday(datainstr.time);
+        datainstr.t = datainstr.T(:)';
                                          
-    case 'RBRSolo'
-
+        datainstr = rmfield(datainstr, 'T');
         
+    case 'RBRSolo'
+        
+        % Make sure vectors are row vector, rename
+        % variables and compute yday from datenum:
+        datainstr.time = datainstr.time(:)';
+        datainstr.yday = datenum2yday(datainstr.time);
+        datainstr.t = datainstr.T(:)';        
     
+        datainstr = rmfield(datainstr, 'T');
+        
     case 'RBRConcerto'
 
      
+    case 'AA'
+        
+        % Make sure vectors are row vector
+        % and compute yday from datenum:
+        datainstr.yday = datenum2yday(datainstr.time(:))';
 
     case 'RDIadcp'
 
-      
+%         this does not make any sense! It seems the explanation might
+%         be the datenum2yday does not take NaN as input...
+%         datainstr.yday(find(isnan(ADCP_TOP.yday)))=datenum2yday(ADCP_TOP.dtnum(find(isnan(ADCP_TOP.yday))));
         
     case 'MP'
         
@@ -63,5 +112,26 @@ switch instrtype
         
         warning(['Data of type ' instrtype ' has not been implemented' ...
                  ' ' mfilename '. Add a new case block in this function.'])
+
+end
+
+
+%% It has happened before (for SBE56s) to have a few instances
+% of more than one observation with the same timestamp. In this
+% case, just keep the first measurement:
+
+if length(datainstr.yday) ~= length(unique(datainstr.yday))
+            
+%     % Print a warning meassage:
+%     warning(['SBE56 with serial number ' num2str(ithsn) ' has ' ...
+% num2str(length(SBE56aux.yday) - length(unique(SBE56aux.yday))) '' ...
+%              ' repeated time stamps.'])
+% 
+%     % Get rid of values at repeated time stamps:
+%     [SBE56aux.yday, indmkuniq, ~] = unique(SBE56aux.yday);
+%     SBE56aux.time = SBE56aux.time(indmkuniq);
+%     SBE56aux.T = SBE56aux.T(indmkuniq);
+%     SBE56aux.t = SBE56aux.t(indmkuniq);
+%     SBE56aux.z = SBE56aux.z(indmkuniq);
 
 end
