@@ -37,7 +37,7 @@ function listout = translateInstrTypes(listin)
 % the entries of possibleInput and possibleOutput:
 
 possibleInput = {'MP', 'RDIadcp', 'SBE37', 'SBE56', 'RBRSolo'};
-possibleOutput = {'MP', 'ADCP',    'SBE3',   'SBE',   'SBE'};
+possibleOutput = {'MP', 'ADCP',   'SBE',   'SBE',   'SBE'};
 
 instrumentMap = containers.Map(possibleInput, possibleOutput);
 
