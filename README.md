@@ -1,6 +1,6 @@
 # gridMooringData
 
-Matlab toolbox for gridding and analyzing mooring data. Originally written by Zhongxiang Zhao to work with McLane Profiler moorings. Further developments and generalizations, as well as git version control, implemented by Olavo Badaro Marques.
+Matlab toolbox for gridding and analyzing mooring data. Originally written by Zhongxiang Zhao to work with McLane Profiler moorings. Further developments and generalizations, as well as git version control, implemented by Olavo Badaro Marques. Others have also contributed along the way.
 
 This toolbox has three main utilities:
 
