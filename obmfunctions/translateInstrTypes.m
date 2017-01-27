@@ -42,7 +42,7 @@ possibleOutput = {'MP', 'ADCP',    'SBE3',   'SBE',   'SBE'};
 instrumentMap = containers.Map(possibleInput, possibleOutput);
 
 
-%% Assign according to the map instrumentMap:
+%% Assign to the output variable according to the map instrumentMap:
 
 N = length(listin);
 
