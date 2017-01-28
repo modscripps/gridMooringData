@@ -82,11 +82,12 @@ end
 % instrP (which instruments are being used for estimating knockdowns):
 % ????????????????????????????????????
 
+
 %% Now we loop through the instrument types in instrP, then
-%  loop through the serial numbers in Msensors, loading the
-%  data associated with each of them into 2 cell arrays: one
-%  for time and the other for pressure.
-%  Loading is done by the "nested function" defined below.
+% loop through the serial numbers in Msensors, loading the
+% data associated with each of them into 2 cell arrays: one
+% for time and the other for pressure.
+% Loading is done by the "nested function" defined below.
 
 % First we check how many instruments we will load
 % and assign it to the variable ninstr:
