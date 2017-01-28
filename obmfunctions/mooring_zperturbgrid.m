@@ -42,33 +42,10 @@ function [zgrid_perturb, time_2min] = mooring_zperturbgrid(moordir, moorid, moor
 instr_presrecords = {'RBRConcerto', 'SBE37', 'RDIadcp'};
 
 
-%% Run the script that has serial numbers of all instruments in
-%  the mooring. The script is recognized by its filename format.
-%  If multiple (or no) files are not found, then prints error message:
-
-Msensors = moorsensors;
-
-% % Get info about all files with a specific filename structure:
-% dir_outstruct = dir(fullfile(moordir, ['*' moorid '_allinstruments.m']));
-% 
-% % Check there is only one file and assign result to variable Msensors:
-% if length(dir_outstruct)==1
-%     
-%     run(fullfile(moordir, dir_outstruct.name))
-%     Msensors = eval([moorid 'sensors;']);  % assign script variable with
-%                                            % mooring sensors info to
-%                                            % variable with unique name
-% else
-%     
-%     error([num2str(length(dir_outstruct)) ' files were ' ...
-%                                    'found inside ' moordir ''])
-% end
-
-
 %% Check which of the instruments in instr_presrecords are
 %  present in the mooring moorid:
 
-instrP = intersect(instr_presrecords, fieldnames(Msensors));
+instrP = intersect(instr_presrecords, fieldnames(moorsensors));
 
 if isempty(instrP)
     error(['The mooring has no instruments of the types in ' ...
@@ -82,7 +59,7 @@ end
 
 
 %% Now we loop through the instrument types in instrP, then
-% loop through the serial numbers in Msensors, loading the
+% loop through the serial numbers in moorsensors, loading the
 % data associated with each of them into 2 cell arrays: one
 % for time and the other for pressure.
 % Loading is done by the "nested function" defined below.
@@ -93,7 +70,7 @@ ninstr = NaN(length(instrP), 1);
 
 for i = 1:length(instrP)
     
-    ninstr(i) = size(Msensors.(instrP{i}), 1);
+    ninstr(i) = size(moorsensors.(instrP{i}), 1);
     
 end
 
@@ -111,7 +88,7 @@ for i1 = 1:length(instrP)
         
         % Load time and pressure records of one instrument:
         timepres = load_mooringsensor_timepres(moordir, instrP{i1}, ...
-                                             Msensors.(instrP{i1})(i2, 1));
+                                             moorsensors.(instrP{i1})(i2, 1));
                                          
         % Get current indice to add the time/pressure records in the
         % appropriate location in the variables alltime/allpres . It looks
@@ -124,7 +101,7 @@ for i1 = 1:length(instrP)
         alltime{indfill} = timepres(:, 1);
         allpres{indfill} = timepres(:, 2);
         
-        allnompd(indfill) = Msensors.(instrP{i1})(i2, 2);
+        allnompd(indfill) = moorsensors.(instrP{i1})(i2, 2);
         
     end
     
