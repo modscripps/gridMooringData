@@ -24,8 +24,6 @@ function [zgrid_perturb, time_2min] = mooring_zperturbgrid(moordir, moorid, moor
 
 
 
-% IF THERE ARE TIME OFFSETS/BUGS WE MUST CORRECT THEM HERE
-
 % WHAT IS THE PERTURBATION CALCULATION??? SHOULD I INCLUDE DIFFERENT
 % OPTIONS????
 
