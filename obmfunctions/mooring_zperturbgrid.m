@@ -183,11 +183,11 @@ else
         time_2min = mintimeoverlap : timestep : maxtimeoverlap ;
 
 
-        %% Interpolate pressure records to the uniform time grid created above:
-        %  We sort the time and pressure records so we have matrices that
-        %  have rows representing monotonically increasing depths (being
-        %  monotonic was required for interp1 in Matlab versions, but does
-        %  not seem to be the case anymore):
+        %% Interpolate pressure records to the uniform time grid created
+        % above. We sort the time and pressure records so we have matrices
+        % that have rows representing monotonically increasing depths
+        % (being monotonic used to be required for interp1 in old Matlab
+        % versions, but does not seem to be the case anymore):
 
         % Pre-allocate space for time-gridded pressures:
         pres_interp = NaN(nrecords, length(time_2min));
