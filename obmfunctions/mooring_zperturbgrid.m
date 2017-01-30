@@ -1,4 +1,5 @@
-function [zgrid_perturb, time_2min] = mooring_zperturbgrid(FP, moorsensors, moordata)
+function interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
+% function [zgrid_perturb, time_2min] = mooring_zperturbgrid(FP, moorsensors, moordata)
 % [z_1m_perturb, time_2min] = MOORING_ZPERTURBGRID(FP, moorsensors, moordata)
 %
 %  inputs:
@@ -170,97 +171,102 @@ else
             ylabel('Median computed from the data')
 
             
-        %% Create a 2-minute (2*1 day / (24hr*60min)) interval date vector
-        %  from the latest early time to the earliest late time (picking the
-        %  overlapping period between all pressure-recording instruments):
-
-        % WHY 2 MINUTES???
-
-        mintimeoverlap = max(cellfun(@min, alltime));
-        maxtimeoverlap = min(cellfun(@max, alltime));
-        timestep = 2/(24*60);
-
-        time_2min = mintimeoverlap : timestep : maxtimeoverlap ;
-
-
-        %% Interpolate pressure records to the uniform time grid created
-        % above. We sort the time and pressure records so we have matrices
-        % that have rows representing monotonically increasing depths
-        % (being monotonic used to be required for interp1 in old Matlab
-        % versions, but does not seem to be the case anymore):
-
-        % Pre-allocate space for time-gridded pressures:
-        pres_interp = NaN(nrecords, length(time_2min));
-
-        % Sort medianpres in increasing order (increasing instrument depth):
-        [medianpres_sorted, indsort] = sort(medianpres);
-
-        % Now sort the time and pressure records:
-        alltime_sorted = alltime(indsort);
-        allpres_sorted = allpres(indsort);
-
-        % NO PROBLEMS WITH NaNs?????
-
-        for i = 1:nrecords
-
-            pres_interp(i, :) = interp1(alltime_sorted{i}, ...
-                                        allpres_sorted{i}, time_2min);
-
-        end
-
-
-        %% Create Perturbation Depth Series for point instruments:
-
-        % Compute the z perturbations for the instruments we have pressure:
-        zperturb_measured = NaN(nrecords, length(time_2min));
-
-        % For each record, compute the pressure/depth perturbation:
-        for i = 1:nrecords
-
-            zperturb_measured(i, :) = pres_interp(i, :) - medianpres_sorted(i);
-
-        end
-
-
-        %% Finally, we estimate pressure/depth perturbation for
-        %  all depths defined in the vector below:
-
-        % HOW DO WE INTERPOLATE/EXTRAPOLATE  ???????????????????????
-
-        % The depth levels for which we want to
-        % interpolate the depth perturbations on:
-        vec_interp_levels = 1:1:FP.depth;
-
-        % Pre-allocate space for a mtrix containing the perturbations
-        % (THAT IS MUCH MORE THAN WE NEED!!!):
-        zgrid_perturb = NaN(length(vec_interp_levels), length(time_2min));
-
-        % For each time, fill in the estimated depth/pressure perturbation profile:
-        for i = 1:length(time_2min)
-
-            zgrid_perturb(:, i) = interp1(medianpres_sorted, ...
-                                          zperturb_measured(:, i), ...
-                                          vec_interp_levels, ...
-                                                              'linear','extrap');
-
-        %     if i == round(length(time_2min)/2)
-        %         keyboard
-        %     end
-        end
-
-
-        %% Make a plot of zgrid_perturb:
-
-        % THERE ARE TOO MANY DATA POINTS IN THIS PLOT (HEAVY PLOT)
-        % THERE ARE "PERTURBATIONS" ASSOCIATED WITH DEPLOYMENT/RECOVERY
-        % THE COLORBAR MUST BE SET SOMEHOW THOUGH....
-        % IT IS A GOOD PLOT TO TAKE A LOOK AT THOUGH.
-
-        % % figure
-        % %     pcolor(time_2min, vec_interp_levels, zgrid_perturb)
-        % %     shading flat
-        % %     axis ij
-        % %     colorbar
+        %% Create the general interpolation object:
+        
+        interpObj = interp1general(alltime, allpres);
+        
+          
+%         %% Create a 2-minute (2*1 day / (24hr*60min)) interval date vector
+%         %  from the latest early time to the earliest late time (picking the
+%         %  overlapping period between all pressure-recording instruments):
+% 
+%         % WHY 2 MINUTES???
+% 
+%         mintimeoverlap = max(cellfun(@min, alltime));
+%         maxtimeoverlap = min(cellfun(@max, alltime));
+%         timestep = 2/(24*60);
+% 
+%         time_2min = mintimeoverlap : timestep : maxtimeoverlap ;
+% 
+% 
+%         %% Interpolate pressure records to the uniform time grid created
+%         % above. We sort the time and pressure records so we have matrices
+%         % that have rows representing monotonically increasing depths
+%         % (being monotonic used to be required for interp1 in old Matlab
+%         % versions, but does not seem to be the case anymore):
+% 
+%         % Pre-allocate space for time-gridded pressures:
+%         pres_interp = NaN(nrecords, length(time_2min));
+% 
+%         % Sort medianpres in increasing order (increasing instrument depth):
+%         [medianpres_sorted, indsort] = sort(medianpres);
+% 
+%         % Now sort the time and pressure records:
+%         alltime_sorted = alltime(indsort);
+%         allpres_sorted = allpres(indsort);
+% 
+%         % NO PROBLEMS WITH NaNs?????
+% 
+%         for i = 1:nrecords
+% 
+%             pres_interp(i, :) = interp1(alltime_sorted{i}, ...
+%                                         allpres_sorted{i}, time_2min);
+% 
+%         end
+% 
+% 
+%         %% Create Perturbation Depth Series for point instruments:
+% 
+%         % Compute the z perturbations for the instruments we have pressure:
+%         zperturb_measured = NaN(nrecords, length(time_2min));
+% 
+%         % For each record, compute the pressure/depth perturbation:
+%         for i = 1:nrecords
+% 
+%             zperturb_measured(i, :) = pres_interp(i, :) - medianpres_sorted(i);
+% 
+%         end
+% 
+% 
+%         %% Finally, we estimate pressure/depth perturbation for
+%         %  all depths defined in the vector below:
+% 
+%         % HOW DO WE INTERPOLATE/EXTRAPOLATE  ???????????????????????
+% 
+%         % The depth levels for which we want to
+%         % interpolate the depth perturbations on:
+%         vec_interp_levels = 1:1:FP.depth;
+% 
+%         % Pre-allocate space for a mtrix containing the perturbations
+%         % (THAT IS MUCH MORE THAN WE NEED!!!):
+%         zgrid_perturb = NaN(length(vec_interp_levels), length(time_2min));
+% 
+%         % For each time, fill in the estimated depth/pressure perturbation profile:
+%         for i = 1:length(time_2min)
+% 
+%             zgrid_perturb(:, i) = interp1(medianpres_sorted, ...
+%                                           zperturb_measured(:, i), ...
+%                                           vec_interp_levels, ...
+%                                                               'linear','extrap');
+% 
+%         %     if i == round(length(time_2min)/2)
+%         %         keyboard
+%         %     end
+%         end
+% 
+% 
+%         %% Make a plot of zgrid_perturb:
+% 
+%         % THERE ARE TOO MANY DATA POINTS IN THIS PLOT (HEAVY PLOT)
+%         % THERE ARE "PERTURBATIONS" ASSOCIATED WITH DEPLOYMENT/RECOVERY
+%         % THE COLORBAR MUST BE SET SOMEHOW THOUGH....
+%         % IT IS A GOOD PLOT TO TAKE A LOOK AT THOUGH.
+% 
+%         % % figure
+%         % %     pcolor(time_2min, vec_interp_levels, zgrid_perturb)
+%         % %     shading flat
+%         % %     axis ij
+%         % %     colorbar
         
         
         
@@ -294,6 +300,7 @@ function timepres = extractTimePres(instrtype, datastruct)
     %   outputs:
     %       - timepres: Nx2 matrix, where time is the first
     %                   column and pressure is the second.
+    % SHOULD BE DEPTH!!!!! (all of them have the z field!!!)
 
     switch instrtype
 
