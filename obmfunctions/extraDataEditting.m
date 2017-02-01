@@ -1,5 +1,5 @@
-function datainstr = extraDataEditting(datainstr, datatype, lat, nomdepth)
-% datainstr = EXTRADATAEDITTING(datain, datatype)
+function datainstr = extraDataEditing(datainstr, datatype, lat, nomdepth)
+% datainstr = EXTRADATAEDITING(datain, datatype)
 %
 %   inputs:
 %       - datainstr: data structure of an instrument on a mooring.
@@ -10,7 +10,7 @@ function datainstr = extraDataEditting(datainstr, datatype, lat, nomdepth)
 %   outputs:
 %       - datainstr: data structure with additional editting/processing.
 %
-% Function EXTRADATAEDITTING does some minor editting such as:
+% Function EXTRADATAEDITING does some minor editting such as:
 % transposing and renaming variables; removing NaNs;
 % estimating depth from pressure (using the seawater toolbox)
 % as well as salinity/potential density when conductivity is measured.
@@ -24,7 +24,7 @@ function datainstr = extraDataEditting(datainstr, datatype, lat, nomdepth)
 %                 be defined by the MOD group data processing routines.
 %                 There is a chance that data that has not been
 %                 processed by those routines will not be editted
-%                 correctly by the function EXTRADATAEDITTING.
+%                 correctly by the function EXTRADATAEDITING.
 %
 % Olavo Badaro Marques.
 

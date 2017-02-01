@@ -1,40 +1,25 @@
 function interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
-% function [zgrid_perturb, time_2min] = mooring_zperturbgrid(FP, moorsensors, moordata)
-% [z_1m_perturb, time_2min] = MOORING_ZPERTURBGRID(FP, moorsensors, moordata)
+% interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
 %
 %  inputs:
-%    - moordir: directory where the mooring data is located.
-%    - moorid: mooring name.
+%    - FP: forward parameters containing mooring information. The
+%          relevations fields are FP.SN (th id of the mooring) and
+%          FP.depth (the water depth at the mooring location).
 %    - moorsensors: struct variable with the serial number
 %                   of all sensors on the mooring.
-%
-%    - FP:
-%    - moorsensors:
-%    - moordata:
+%    - moordata: struct variable with all the raw mooring data. In order
+%                to avoid potential problems, moordata must be the output
+%                of the extraDataEditing function.
 %
 %  outputs:
-%    -
-%    -
+%    - interpObj: an object of class interp1general, which is defined and
+%                 created by the m-file interp1general.m.
 %
-% Function MOORING_ZPERTURBGRID
-%
-% Inside this function we use the script containing info about
-% all instruments in the mooring moorid. It is assumed this
-% scripts is in the folder moordir.
+% Function MOORING_ZPERTURBGRID.... The knockdown correction itself is
+% done by the function correctKnockDownZ.m, which takes as input
+% the interpObj variable output of MOORING_ZPERTURBGRID.
 %
 % Olavo Badaro Marques, 07/14/2016.
-
-
-% WHAT IS THE PERTURBATION CALCULATION??? SHOULD I INCLUDE DIFFERENT
-% OPTIONS????
-
-% I DISAGREE WITH BOTH OUTPUTS! IN MY MIN, IDEALLY (PYTHON) THE OUTPUT
-% WOULD BE A FUNCTION TO APPLY FOR THE TLOGGERS IN THE MOORING. I CAN DO
-% SOOMETHING SIMILAR IN MATLAB.
-
-% TO CREATE z_1m_perturb I NEED THE DEPTH OF DEEPEST INSTRUMENT OR BOTTOM
-% DEPTH TO BE SURE. HOW SHOULD I INCORPORATE THAT. THAT WOULD NOT BE
-% NECESSARY IF I MAKE MY THING ABOVE.
 
 
 %% Type of pressure-recording instruments we want to look
@@ -69,6 +54,7 @@ else
     end
 
     % ----------------------------------------------------
+    % TO DO:
     % if sum(ninstr)==1, I can't make knockdown correction
     % as it is done, I could however do something if, for 
     % example, the mooring consists of an ADCP hundred meter
@@ -77,6 +63,7 @@ else
     % ----------------------------------------------------
     
     % ----------------------------------------------------
+    % TO DO:
     % Print to the screen (let the user know) the instrument list
     % instrP (which instruments are being used for estimating knockdowns):
     % ----------------------------------------------------
@@ -120,25 +107,33 @@ else
         
         %% Add surface/bottom pressure "boundary conditions":
         
+        % Nominal depths of the sensors/boundaries we know the pressure:
         allnompd = [0, allnompd, FP.depth];
         
+        % Concatenate initial/end timestamps to the alltime cell array:
         alltime = [[max(cellfun(@min, alltime)); min(cellfun(@max, alltime))], ...
                    alltime, ...
                    [max(cellfun(@min, alltime)); min(cellfun(@max, alltime))]];
+               
+        % Concatenate nominal depths to the allpres cell array:
         allpres = [[allnompd(1); allnompd(1)], ...
                     allpres, ...
                    [allnompd(end); allnompd(end)]];
         
+        % -----------------------------------------------------------------
+        % TO DO:
         % Actually, the bottom BC is good, but the surface BC is horrible.
+        % I might want to use depth rather than pressure.
+        % -----------------------------------------------------------------
                
         
         %% Plot the the pressure time series and take the MEDIAN for each
-        %  instrument, which is overlayed on the plot. Since these MEDIANS
-        %  are reference values used below it is nice to look at the plot
-        %  and make sure these meadians are about the same as where we the
-        %  instruments to be at. Median in computed instead of the mean
-        %  because it is not as sensitive to values taken before/after
-        %  the instrument was deployed/recovered:
+        % instrument, which is overlayed on the plot. Since these MEDIANS
+        % are reference values used below it is nice to look at the plot
+        % and make sure these meadians are about the same as where we the
+        % instruments to be at. Median in computed instead of the mean
+        % because it is not as sensitive to values taken before/after
+        % the instrument was deployed/recovered:
 
         % Pre-allocate space for median pressure:
         medianpres = NaN(1, length(allnompd));
@@ -188,103 +183,7 @@ else
         %% Create the general interpolation object:
         
         interpObj = interp1general(alltime, allpres);
-        
-        % WHAT ABOUT OPTIONAL BASEINTERVAL?????
-          
-%         %% Create a 2-minute (2*1 day / (24hr*60min)) interval date vector
-%         %  from the latest early time to the earliest late time (picking the
-%         %  overlapping period between all pressure-recording instruments):
-% 
-%         % WHY 2 MINUTES???
-% 
-%         mintimeoverlap = max(cellfun(@min, alltime));
-%         maxtimeoverlap = min(cellfun(@max, alltime));
-%         timestep = 2/(24*60);
-% 
-%         time_2min = mintimeoverlap : timestep : maxtimeoverlap ;
-% 
-% 
-%         %% Interpolate pressure records to the uniform time grid created
-%         % above. We sort the time and pressure records so we have matrices
-%         % that have rows representing monotonically increasing depths
-%         % (being monotonic used to be required for interp1 in old Matlab
-%         % versions, but does not seem to be the case anymore):
-% 
-%         % Pre-allocate space for time-gridded pressures:
-%         pres_interp = NaN(nrecords, length(time_2min));
-% 
-%         % Sort medianpres in increasing order (increasing instrument depth):
-%         [medianpres_sorted, indsort] = sort(medianpres);
-% 
-%         % Now sort the time and pressure records:
-%         alltime_sorted = alltime(indsort);
-%         allpres_sorted = allpres(indsort);
-% 
-%         % NO PROBLEMS WITH NaNs?????
-% 
-%         for i = 1:nrecords
-% 
-%             pres_interp(i, :) = interp1(alltime_sorted{i}, ...
-%                                         allpres_sorted{i}, time_2min);
-% 
-%         end
-% 
-% 
-%         %% Create Perturbation Depth Series for point instruments:
-% 
-%         % Compute the z perturbations for the instruments we have pressure:
-%         zperturb_measured = NaN(nrecords, length(time_2min));
-% 
-%         % For each record, compute the pressure/depth perturbation:
-%         for i = 1:nrecords
-% 
-%             zperturb_measured(i, :) = pres_interp(i, :) - medianpres_sorted(i);
-% 
-%         end
-% 
-% 
-%         %% Finally, we estimate pressure/depth perturbation for
-%         %  all depths defined in the vector below:
-% 
-%         % HOW DO WE INTERPOLATE/EXTRAPOLATE  ???????????????????????
-% 
-%         % The depth levels for which we want to
-%         % interpolate the depth perturbations on:
-%         vec_interp_levels = 1:1:FP.depth;
-% 
-%         % Pre-allocate space for a mtrix containing the perturbations
-%         % (THAT IS MUCH MORE THAN WE NEED!!!):
-%         zgrid_perturb = NaN(length(vec_interp_levels), length(time_2min));
-% 
-%         % For each time, fill in the estimated depth/pressure perturbation profile:
-%         for i = 1:length(time_2min)
-% 
-%             zgrid_perturb(:, i) = interp1(medianpres_sorted, ...
-%                                           zperturb_measured(:, i), ...
-%                                           vec_interp_levels, ...
-%                                                               'linear','extrap');
-% 
-%         %     if i == round(length(time_2min)/2)
-%         %         keyboard
-%         %     end
-%         end
-% 
-% 
-%         %% Make a plot of zgrid_perturb:
-% 
-%         % THERE ARE TOO MANY DATA POINTS IN THIS PLOT (HEAVY PLOT)
-%         % THERE ARE "PERTURBATIONS" ASSOCIATED WITH DEPLOYMENT/RECOVERY
-%         % THE COLORBAR MUST BE SET SOMEHOW THOUGH....
-%         % IT IS A GOOD PLOT TO TAKE A LOOK AT THOUGH.
-% 
-%         % % figure
-%         % %     pcolor(time_2min, vec_interp_levels, zgrid_perturb)
-%         % %     shading flat
-%         % %     axis ij
-%         % %     colorbar
-        
-        
-        
+                
         
     end
     
