@@ -118,6 +118,20 @@ else
         end
 
         
+        %% Add surface/bottom pressure "boundary conditions":
+        
+        allnompd = [0, allnompd, FP.depth];
+        
+        alltime = [[max(cellfun(@min, alltime)); min(cellfun(@max, alltime))], ...
+                   alltime, ...
+                   [max(cellfun(@min, alltime)); min(cellfun(@max, alltime))]];
+        allpres = [[allnompd(1); allnompd(1)], ...
+                    allpres, ...
+                   [allnompd(end); allnompd(end)]];
+        
+        % Actually, the bottom BC is good, but the surface BC is horrible.
+               
+        
         %% Plot the the pressure time series and take the MEDIAN for each
         %  instrument, which is overlayed on the plot. Since these MEDIANS
         %  are reference values used below it is nice to look at the plot
@@ -127,12 +141,12 @@ else
         %  the instrument was deployed/recovered:
 
         % Pre-allocate space for median pressure:
-        medianpres = NaN(1, nrecords);
+        medianpres = NaN(1, length(allnompd));
 
         % Plot pressure records:
         figure
             hold on, axis ij
-            for i = 1:nrecords
+            for i = 1:length(allnompd)
 
                 hp = plot(alltime{i}, allpres{i});
 
@@ -151,7 +165,7 @@ else
             xlabel(['UTC time label datestr format is ' dateformatstr])
             ylabel('Pressure/depth as taken from the instruments')
             title(['Pressure/depth records on mooring ' FP.SN], 'FontSize', 14)
-            
+
 
         %% Figure comparing median with planned nominal pressure/depth:
 
@@ -175,6 +189,7 @@ else
         
         interpObj = interp1general(alltime, allpres);
         
+        % WHAT ABOUT OPTIONAL BASEINTERVAL?????
           
 %         %% Create a 2-minute (2*1 day / (24hr*60min)) interval date vector
 %         %  from the latest early time to the earliest late time (picking the
