@@ -1,5 +1,5 @@
-function datainstr = extraDataEditting(datainstr, datatype, lat)
-% datainstr = EXTRADATAEDITTING(datain, datatype)
+function datainstr = extraDataEditing(datainstr, datatype, lat, nomdepth)
+% datainstr = EXTRADATAEDITING(datain, datatype)
 %
 %   inputs:
 %       - datainstr: data structure of an instrument on a mooring.
@@ -10,7 +10,7 @@ function datainstr = extraDataEditting(datainstr, datatype, lat)
 %   outputs:
 %       - datainstr: data structure with additional editting/processing.
 %
-% Function EXTRADATAEDITTING does some minor editting such as:
+% Function EXTRADATAEDITING does some minor editting such as:
 % transposing and renaming variables; removing NaNs;
 % estimating depth from pressure (using the seawater toolbox)
 % as well as salinity/potential density when conductivity is measured.
@@ -24,7 +24,7 @@ function datainstr = extraDataEditting(datainstr, datatype, lat)
 %                 be defined by the MOD group data processing routines.
 %                 There is a chance that data that has not been
 %                 processed by those routines will not be editted
-%                 correctly by the function EXTRADATAEDITTING.
+%                 correctly by the function EXTRADATAEDITING.
 %
 % Olavo Badaro Marques.
 
@@ -42,6 +42,8 @@ switch datatype
         datainstr.t = datainstr.T(:)';
         
         datainstr = rmfield(datainstr, 'T');
+        
+        % MAKE SURE THAT SBE37 HAS MEASURED PRESSURE!!!
         
         % Compute depth from pressure:
         datainstr.P = datainstr.P(:)';
@@ -77,7 +79,8 @@ switch datatype
         datainstr.time = datainstr.time(:)';
         datainstr.yday = datenum2yday(datainstr.time);
         datainstr.t = datainstr.T(:)';
-                                         
+        datainstr.z = nomdepth;
+        
         datainstr = rmfield(datainstr, 'T');
         
     case 'RBRSolo'
@@ -87,7 +90,8 @@ switch datatype
         datainstr.time = datainstr.time(:)';
         datainstr.yday = datenum2yday(datainstr.time);
         datainstr.t = datainstr.T(:)';        
-    
+        datainstr.z = nomdepth;
+        
         datainstr = rmfield(datainstr, 'T');
         
     case 'RBRConcerto'
@@ -98,7 +102,8 @@ switch datatype
         % Make sure vectors are row vector
         % and compute yday from datenum:
         datainstr.yday = datenum2yday(datainstr.time(:))';
-
+        datainstr.z = nomdepth;
+        
     case 'RDIadcp'
 
 %         this does not make any sense! It seems the explanation might
@@ -116,9 +121,10 @@ switch datatype
 end
 
 
-%% It has happened before (for SBE56s) to have a few instances
-% of more than one observation with the same timestamp. In this
-% case, just keep the first measurement:
+%% Removed observation when timestamps are repeated. It has
+% happened before (for SBE56s) to have a few instances of
+% repeated timestamps. "A few" is usually a handful of data
+% points. In this case, just keep the first measurement:
 
 if length(datainstr.yday) ~= length(unique(datainstr.yday))
             
@@ -126,12 +132,14 @@ if length(datainstr.yday) ~= length(unique(datainstr.yday))
 %     warning(['SBE56 with serial number ' num2str(ithsn) ' has ' ...
 % num2str(length(SBE56aux.yday) - length(unique(SBE56aux.yday))) '' ...
 %              ' repeated time stamps.'])
-% 
-%     % Get rid of values at repeated time stamps:
-%     [SBE56aux.yday, indmkuniq, ~] = unique(SBE56aux.yday);
-%     SBE56aux.time = SBE56aux.time(indmkuniq);
-%     SBE56aux.T = SBE56aux.T(indmkuniq);
-%     SBE56aux.t = SBE56aux.t(indmkuniq);
-%     SBE56aux.z = SBE56aux.z(indmkuniq);
+
+    % Get rid of values at repeated time stamps:
+    [datainstr.yday, indmkuniq, ~] = unique(datainstr.yday);
+    
+    datainstr.time = datainstr.time(indmkuniq);
+    datainstr.t = datainstr.t(indmkuniq);
+%     datainstr.z = datainstr.z(indmkuniq);
+    
+    % This should be done better....
 
 end
