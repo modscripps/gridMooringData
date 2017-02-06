@@ -182,7 +182,7 @@ else
             
         %% Create the general interpolation object:
         
-        interpObj = interp1general(alltime, allpres);
+        interpObj = interp1class(alltime, allpres);
                 
         
     end

@@ -139,7 +139,7 @@ eval('moorsensors')
 
 instrmntTypes = fieldnames(moorsensors);
 
-loadedData = createEmptyStruct(instrmntTypes, 1);
+loadedData = emptyStructArray(instrmntTypes, 1);
 
 % Loop over the types of instruments:
 for i1 = 1:length(instrmntTypes)
@@ -164,7 +164,7 @@ end
 % I have to create a new empty structure because Matlab
 % does not allow substituting a sructure by another
 % one with different fields:
-editedData = createEmptyStruct(instrmntTypes, 1);
+editedData = emptyStructArray(instrmntTypes, 1);
 
 % Loop over the types of instruments:
 for i1 = 1:length(instrmntTypes)

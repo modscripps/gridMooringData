@@ -13,7 +13,7 @@ function correctedData = correctKnockDownZ(interpObj, moorsensors, editedData, t
 % Function CORRECTKNOCKDOWNZ organizes the data for the mooring
 % knockdown correction. The calculation itself is performed by
 % the object interpObj. If you want to see how the interpolation
-% is done, you should look at interp1general.m
+% is done, you should look at interp1class.m
 %
 % If data is high resolution and lreg is false, then the correction
 % will be done separately for each instrument (for the different
