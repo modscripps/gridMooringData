@@ -274,14 +274,13 @@ for ivar = 1 : length(GP.VarNameList)
     for idim = 1:length(GP.rcinterp)
 
         if GP.rcinterp(idim)==1
-            maxdist = GP.(string_dx{idim}) * ...
+            maxdist = GP.(string_dx{GP.rcinterp(idim)}) * ...
                                          nanmean(diff(griddedDATA.z_grid));
         else
-            maxdist = GP.(string_dx{idim}) * ...
+            maxdist = GP.(string_dx{GP.rcinterp(idim)}) * ...
                                       nanmean(diff(griddedDATA.yday_grid));
         end
-                       
-        keyboard
+
         
         % This if exists because, on the second iteration of the
         % for loop, we want to operate on the result of the first
@@ -299,9 +298,9 @@ for ivar = 1 : length(GP.VarNameList)
             % Grid in time:
             else
                 
-                if isfield(DATA, 'efluorgain')
-                    keyboard
-                end
+%                 if isfield(DATA, 'efluorgain')
+%                     keyboard
+%                 end
                 
                 if ivar==1
                 
@@ -347,16 +346,16 @@ for ivar = 1 : length(GP.VarNameList)
             % Grid in time:
             else
                 
-                if isfield(DATA, 'efluorgain')
-                    keyboard
-                end
+%                 if isfield(DATA, 'efluorgain')
+%                     keyboard
+%                 end
                 auxvargrid = GriddingOrAssigning(2, maxdist,    ...
                                                  griddedDATA.yday, ...
                                                  auxvargrid,    ...
                                                  griddedDATA.yday_grid);
-                if isfield(DATA, 'efluorgain')
-                    keyboard
-                end
+%                 if isfield(DATA, 'efluorgain')
+%                     keyboard
+%                 end
             end
  
         end
