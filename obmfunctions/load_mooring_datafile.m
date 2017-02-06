@@ -61,7 +61,7 @@ switch instrtype
         dataloaded = load(fullfile(moordir, 'RBRConcerto', ...
                                    num2str(sn, '%06d'), ...
                                    [num2str(sn, '%06d') '.mat']));
-
+                               
     case 'RDIadcp'
 
         % We first use * and dir because the ADCP filenames have the
@@ -82,6 +82,19 @@ switch instrtype
         flstrc = dir(flullpath);
         
         dataloaded = load(fullfile(dirpath, flstrc.name));
+        
+    case 'AA'
+        
+        dirpath = fullfile(moordir, 'Aanderaa');
+        flullpath = fullfile(dirpath, ['AA' num2str(sn) '_*.mat']);
+        flstrc = dir(flullpath);
+        
+        dataloaded = load(fullfile(dirpath, flstrc.name));
+        
+        
+	% ---------------------------------------------------------------------
+    %                   ADD NEW INSTRUMENT CASE HERE.
+    % ---------------------------------------------------------------------
         
     otherwise
         
