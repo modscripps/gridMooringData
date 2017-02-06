@@ -100,6 +100,20 @@ for idx_var = 1 : length(FP.VarNameList)
 end
 
 
+%% If FP contains the fields with the maximum gap
+% for interpolation, pass to the MMP structure:
+
+if isfield(FP, 'MaxTimesDZ')
+    MMP.MaxTimesDZ = FP.MaxTimesDZ;
+end
+
+
+if isfield(FP, 'MaxTimesDT')
+    MMP.MaxTimesDT = FP.MaxTimesDT;
+end
+
+
+
 %% project mooring's data to MMP data
 for idx_str = 1 : length(Mooring.DataList)
     DataName      = Mooring.DataList{idx_str};

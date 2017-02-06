@@ -220,9 +220,11 @@ end
 % -------------------------------------------------
 
 
-% Check the existence of parameters (MaxTimesDZ and MaxTimesDT)
-% defining the maximum length of the gaps that will be
-% interpolated through. The default values are arbitrary:
+% Check the existence of parameters (MaxTimesDZ and MaxTimesDT) defining
+% the maximum length of the gaps that will be interpolated through. The
+% default values are arbitrary. Example, if the time-grid has a 10-minute
+% resolution, then GP.MaxTimesDT = 3 determines that gaps longer than 30
+% minutes will not be interpolated:
 %
 if ~isfield(GP, 'MaxTimesDZ')
 	GP.MaxTimesDZ = 3;
@@ -255,7 +257,7 @@ griddedDATA.z_grid    = GP.z_grid;
 
 %% Loop through variables given in GP.VarNameList
 
-string_dx    = {'MaxTimesDZ', 'MaxTimesDT'};
+string_dx = {'MaxTimesDZ', 'MaxTimesDT'};
 
 
 % Loop through variables:
@@ -279,6 +281,7 @@ for ivar = 1 : length(GP.VarNameList)
                                       nanmean(diff(griddedDATA.yday_grid));
         end
                        
+        keyboard
         
         % This if exists because, on the second iteration of the
         % for loop, we want to operate on the result of the first
@@ -295,6 +298,10 @@ for ivar = 1 : length(GP.VarNameList)
                
             % Grid in time:
             else
+                
+                if isfield(DATA, 'efluorgain')
+                    keyboard
+                end
                 
                 if ivar==1
                 
@@ -340,11 +347,16 @@ for ivar = 1 : length(GP.VarNameList)
             % Grid in time:
             else
                 
+                if isfield(DATA, 'efluorgain')
+                    keyboard
+                end
                 auxvargrid = GriddingOrAssigning(2, maxdist,    ...
                                                  griddedDATA.yday, ...
                                                  auxvargrid,    ...
                                                  griddedDATA.yday_grid);
-                
+                if isfield(DATA, 'efluorgain')
+                    keyboard
+                end
             end
  
         end

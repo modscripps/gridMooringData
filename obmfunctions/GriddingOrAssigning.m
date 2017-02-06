@@ -63,7 +63,7 @@ else
     if rx>1
         indx = 1:rx;
     else
-        indx = ones(1, ny); % Maybe it is right now
+        indx = ones(1, ny);
     end
     
 end
@@ -112,7 +112,7 @@ for i = 1:ny
         end
         
     else
-% tic
+
         if nargin<6
             % First check what are the grid points that
             % are close to enough to the data:
@@ -135,7 +135,7 @@ for i = 1:ny
         else
             ygrid(i, lclose) = yaux_gridded;
         end
-% toc   
+   
     end 
     
 end

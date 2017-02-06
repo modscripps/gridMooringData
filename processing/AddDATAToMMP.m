@@ -67,9 +67,10 @@ end
 MMP.(['para_' DATA.name]).OriginalTime = DATA.OriginalTime;
 MMP.(['para_' DATA.name]).VarNameList  = DATA.VarNameList;
 
-DATA.VarNameList
-
+% Print to the screen the data structure and
+% which of its variables will be gridded:
 DATA
+DATA.VarNameList
 
 % --------------------------------------------
 % OBM - temporary!!!
@@ -98,11 +99,16 @@ for idx_var = 1 : length(DATA.VarNameList)
 end
 
 
-%% calling GriddingMMP
+%% Calls Grids the variables calling GriddingOnMMPstruct:
+
 PP.yday_grid    = MMP.yday;
 PP.z_grid       = MMP.z;
+PP.MaxTimesDZ   = MMP.MaxTimesDZ;
+PP.MaxTimesDT   = MMP.MaxTimesDT;
+
 PP.OriginalTime = DATA.OriginalTime;
 PP.VarNameList  = DATA.VarNameList;
+
 
 if strncmp(DATA.name, 'ADCP', 4)
     PP.rcinterp = [1, 2];
@@ -113,8 +119,10 @@ end
 NewDATA = GriddingOnMMPstruct(DATA, PP);
 
 
+%% Now assign the gridded variables of NewDATA to
+% the appropriate locations in the MMP structure:
 
-%% looping to work on DATA.VarNameList
+% looping to work on DATA.VarNameList
 for idx_var = 1 : length(DATA.VarNameList)
     varname = DATA.VarNameList{idx_var};    
 
