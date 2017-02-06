@@ -31,6 +31,13 @@ function correctedData = correctKnockDownZ(interpObj, moorsensors, editedData, t
 instr_correct = {'SBE56', 'SBE39', 'SBE37', 'RBRSolo', 'AA'};
 
 
+%% List of measured quantities that should be corrected by the
+% knowckdown. E.g. temperature and velocity are corrected, but
+% yearday is not:
+
+vars_correct = {'t', 's', 'sgth', 'u', 'v', 'w'};
+
+
 %% Match instrument types on the mooring with those in instr_correct:
 
 instrC = intersect(instr_correct, fieldnames(moorsensors));
@@ -97,23 +104,46 @@ else
         
         % Now assign the interpolated depth corrections
         % to the appropriate variables:
-        for i = 1:size(posnomdepths, 1)
+        for i1 = 1:size(posnomdepths, 1)
             
-            aux1 = posnomdepths{i, 1};  % type of instrument
-            aux2 = posnomdepths{i, 2};  % index of the instrument
+            aux1 = posnomdepths{i1, 1};  % type of instrument
+            aux2 = posnomdepths{i1, 2};  % index of the instrument
             
-            editedData.(aux1)(aux2).z = zcorrection(i, :);
+            editedData.(aux1)(aux2).z = zcorrection(i1, :);
                                                      
             if length(timegrid)~=length(editedData.(aux1)(aux2).yday)
                 
-                % I need all types of instruments to have the field
-                % time -- this must be done in extraDataEditting.m
-                editedData.(aux1)(aux2).t = ...
-                               interp1(editedData.(aux1)(aux2).time, ...
-                                       editedData.(aux1)(aux2).t,    ...
-                                       timegrid);
-
+                % Fill yday field Convert timegrid to yday:
                 editedData.(aux1)(aux2).yday = datenum2yday(timegrid); 
+
+                % Get all the fieldnames and only interpolate
+                % the fields that match with vars_correct:
+                auxfields = fieldnames(editedData.(aux1)(aux2));
+                
+                % Loop over the list of variables to interpolate:
+                for i2 = 1:length(vars_correct)
+                    
+                    auxi2var = vars_correct{i2};
+                    
+                    % Only interpolate if field name
+                    % matches one in auxfields:
+                    if any(strcmp(auxfields, auxi2var))
+                        
+                        editedData.(aux1)(aux2).(auxi2var) = ...
+                            interp1(editedData.(aux1)(aux2).time,       ...
+                                    editedData.(aux1)(aux2).(auxi2var), ...
+                                                               timegrid);
+                                                           
+                        % I need all types of instruments to have the field
+                        % "time": this can be done in extraDataEditting.m
+
+                    end    
+                end
+                
+                
+            else
+                warning('WHAT IS GOING ON HERE???? I think this can almost never happen')
+                keyboard
                 
             end
         end
@@ -122,22 +152,23 @@ else
     else
 	%% If there is no common timegrid, then interpolate depth
     % separately for each instrument onto their own timestamps:
-    
+
+%   THIS IS NOT FINISHED!
 %         warning()   % might want to give a warning that
 %                     % this might take a long time
-        
-        for i1 = 1:length(instrC)    % Loop over instrument types
-            for i2 = 1:ninstr(i1)    % Loop over instruments
-
-                if isscalar(editedData.(instrC{i}).z)
-
-                        editedData.(instrC{i}).z = ...
-                                interpObj.interpxy(editedData.(instrC{i}).yday, ...
-                                                   editedData.(instrC{i}).z);
-                end
-
-            end
-        end
+%         
+%         for i1 = 1:length(instrC)    % Loop over instrument types
+%             for i2 = 1:ninstr(i1)    % Loop over instruments
+% 
+%                 if isscalar(editedData.(instrC{i}).z)
+% 
+%                         editedData.(instrC{i}).z = ...
+%                                 interpObj.interpxy(editedData.(instrC{i}).yday, ...
+%                                                    editedData.(instrC{i}).z);
+%                 end
+% 
+%             end
+%         end
         
     end
     
