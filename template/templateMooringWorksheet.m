@@ -1,32 +1,35 @@
 %% Template for writing the Mooring and MMP structure variables.
 %
-% This template is part of the ......... toolbox. Change the
-% information on this file for the mooring that you are
-% interested in and run this script.
+% This template is part of the gridMooringData toolbox. Change the
+% information on this file for the mooring that you are interested
+% in and run this script.
 %
-% This script has 4 sections: (1) Data information the user needs
-% to specify, (2) Loading the data, (3) Creating the Mooring
-% structure and (4) Creating the MMP structure. It is only required
-% that you change the information from the template on section (1).
+% This script has 5 sections: (1) Data information the user needs
+% to specify, (2) Loading the data, (3) Looking/editing data, (4)
+% Creating the Mooring structure and (5) Creating the MMP structure.
+% It is only required that you change the information from the
+% template on section (1).
+%
+% Section (3) has no code in the template. The purpose of this
+% section is so that the user add code to deal with processing
+% specific to a mooring. For example, if there is a compass offset
+% that hasn't yet been corrected in the current meter processing,
+% then you may add this correction in section (3).
 %
 % Three important things left to do:
-%       1 - Load data in an organized way
-%       2 - CHOOSE WHETHER WE DO OR DON'T DO KNOCKDOWN CORRECTION.
-%       3 - Leave room for plotting/adjusting things that
-%           may be wrong with the data.
-%       4 - LEAVE OPTION FOR ADDING STATION DATA, FIT S FROM T
-%           AND ESTIMATE SALINITY ON THERMISTOR DATA.
-%       5 - AddInstrumentToMooring recursively.
-%       6 - Option for putting station rather than mooring.
-%       7 - NAME OF THE VARIABLE FROM ALL INSTRUMENTS SCRIPT!!!!
 %
-% Olavo Badaro Marques, 01/05/2017.
+%       1 - Option for not doing knockdown correction.
+%       2 - Option for adding station data, fit S from T
+%           and estimate salinity on thermistor data.
+%       3 - Option for putting station rather than mooring.
+%
+% Olavo Badaro Marques, Jan-2017.
 
 clear
 close all
 
 
-%%
+%% Section 1
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ------------- CHANGE THE VARIABLES IN THE CODE BLOCKS BELOW ------------
@@ -38,15 +41,25 @@ close all
 
 moorid = 'T1';
 
-moordir = ['/Users/olavobm/Documents/MATLAB/olavo_research/' ...
-           'TTIDE/data_asigot/Tmoorings_1to6/T1'];
+% moordir = ['/Users/olavobm/Documents/MATLAB/olavo_research/' ...
+%            'TTIDE/data_asigot/Tmoorings_1to6/T1'];
+
+moordir = '/Volumes/Ahua/data_archive/WaveChasers-DataArchive/TTIDE/Moorings/T1/';
 
 cd(moordir)
 
 
 %% Script with information of all instruments on the mooring:
 
-script_moor_allinstruments = 'TTIDE_T1_allinstruments.m';
+% dir_script_allinstruments = moordir;
+dir_script_allinstruments = ['/Users/olavobm/Documents/MATLAB/olavo_research/' ...
+           'TTIDE/data_asigot/Tmoorings_1to6/T1'];
+
+scriptname = 'TTIDE_T1_allinstruments.m';
+
+moorvarname = 'T1sensors';
+
+script_fullpath = fullfile(dir_script_allinstruments, scriptname);
 
 
 %% Metadata of current mooring (FP = Forward Parameters):
@@ -96,7 +109,7 @@ UID = ['TTIDE-' moorid '-' label];  % ID for output struct variables
 
 
 
-%%
+%% Section 2
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ---------------------------- LOAD THE DATA -----------------------------
@@ -106,53 +119,25 @@ UID = ['TTIDE-' moorid '-' label];  % ID for output struct variables
 
 %% Run script contaning all instrument serial numbers and nominal depths:
 
-run(script_moor_allinstruments)
+% Run script that creates the variable with instruments info:
+run(script_fullpath)
+
+% Copy the created variable to one with the generic name "moorsensors":
+moorsensors = eval(moorvarname);
+
+% Clear the variable that has been copied:
+eval(['clear ' moorvarname])
 
 % Print variable to the screen so the user can
 % make sure the intended sensors were loaded:
-disp(['Script ' script_moor_allinstruments ' creates ' ...
-      'the following variable:'])
+disp(['The variable created from ' script_fullpath ' is:'])
   
-eval([moorid 'sensors'])
+eval('moorsensors')
+            
 
-
-%% Generate depth-perturbation grid. Based on vertical
-%  displacements from instruments that measure pressure,
-%  this function estimates the vertical displacement of
-%  an instrument anywhere in the water column:
-
-[ z_1m_perturb, time_2min ] = mooring_zperturbgrid(moordir, moorid, T1sensors);
-
-% THERE MUST BE AN OPTION FOR NOT RUNNING THIS FUNCTION!!!
-
-% This should come after loading all the data!!!!!!!!
-
-
-%% Load ADCP data
-% There are different versions of processed ADCP. This code implements
-% the use of ADCP gridded with a 10-minute time resolution.
-
-
-% % Middle ADCP
-% ADCP_MID = load_mooring_datafile(moordir, 'RDIadcp', T1sensors.RDIadcp(2, 1));
-% 
-% ADCP_MID.yday(isnan(ADCP_MID.yday)) = ...
-%                         datenum2yday(ADCP_MID.dtnum(isnan(ADCP_MID.yday)));
-% 
-% % Possible NaNs in time variable are removed. There should
-% % never be NaN in an independent variable!!!!
-% 
-% %  Bottom ADCP:
-% ADCP_BOT = load_mooring_datafile(moordir, 'RDIadcp', T1sensors.RDIadcp(1, 1));
-% 
-% 
-% ADCP_BOT.yday(isnan(ADCP_BOT.yday)) = ...
-%                         datenum2yday(ADCP_BOT.dtnum(isnan(ADCP_BOT.yday)));
-
-                    
 %% Load all the data to the workspace:
 
-instrmntTypes = fieldnames(T1sensors);
+instrmntTypes = fieldnames(moorsensors);
 
 loadedData = createEmptyStruct(instrmntTypes, 1);
 
@@ -160,32 +145,87 @@ loadedData = createEmptyStruct(instrmntTypes, 1);
 for i1 = 1:length(instrmntTypes)
     
     % Now loop over each instrument of the i1'th type:
-    for i2 = 1:size(T1sensors.(instrmntTypes{i1}), 1)
+    for i2 = 1:size(moorsensors.(instrmntTypes{i1}), 1)
         
+        % Call the load_mooring_datafile function:
         loadedData.(instrmntTypes{i1})(i2) = ...
                load_mooring_datafile(moordir, ...
                                      instrmntTypes{i1}, ...
-                                     T1sensors.(instrmntTypes{i1})(i2, 1));
-        
+                                     moorsensors.(instrmntTypes{i1})(i2, 1));
     end
-    
     
 end
 
 
-%% After loading the data, there are few
-% things to do that are instrument-specific:
-                    
-% ADCP (or any instrument): remove NaNs in independent variable.
-% SBEs and RBRs: compute yday.
-% Rename variables: go from (capital) T to lower case t.
-% Compute potential density.
-% Compute z from pressure (?).
-% Correct knockdown on thermistors.
+%% After loading the data, there is few minor processing
+% that still needs to be done. Each type of instrument/data
+% needs something different:
+     
+% I have to create a new empty structure because Matlab
+% does not allow substituting a sructure by another
+% one with different fields:
+editedData = createEmptyStruct(instrmntTypes, 1);
+
+% Loop over the types of instruments:
+for i1 = 1:length(instrmntTypes)
+    
+    % Now loop over each instrument of the i1'th type:
+    for i2 = 1:size(moorsensors.(instrmntTypes{i1}), 1)
+        
+        % Call the extraDataEditting function:
+        editedData.(instrmntTypes{i1})(i2) = ...
+             extraDataEditing(loadedData.(instrmntTypes{i1})(i2), ...
+                              instrmntTypes{i1}, ...
+                              FP.lat, moorsensors.(instrmntTypes{i1})(i2, 2));
+    end
+    
+end
+
+% I probably want to erase loadedData to free up space
+
+%% Generate depth-perturbation grid for mooring knockdown correction.
+% Based on vertical displacements from instruments that measure
+% pressure, this function estimates the vertical displacement of
+% an instrument anywhere in the water column:
+
+interpObj = mooring_zperturbgrid(FP, moorsensors, editedData);
+
+% Create common time for interpolating 
+mintimeoverlap = max(cellfun(@min, interpObj.xarrays));
+maxtimeoverlap = min(cellfun(@max, interpObj.xarrays));
+timestep = 2/(24*60);  % 2 minutes
+
+timegrid = mintimeoverlap : timestep : maxtimeoverlap;
 
 
 
-%%
+% THERE MUST BE AN OPTION FOR NOT RUNNING THIS FUNCTION,
+% which means that I would have to create depth vectors
+% for the instruments that do not measure pressure!!!
+correctedData = correctKnockDownZ(interpObj, moorsensors, editedData, timegrid);
+
+
+% % Interp correction to data timestamp:
+% for i1 = 1:length(instrmntTypes)
+%     
+%     % Now loop over each instrument of the i1'th type:
+%     for i2 = 1:size(moorsensors.(instrmntTypes{i1}), 1)
+%         correctedData = interpstructfields(correctedData, f, tgiven, tinterp);
+%     end
+%     
+% end
+
+
+
+%% Section 3
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+%  ------- THIS IS WHERE YOU CAN ADD CODE TO PLOT OR EDIT THE DATA --------
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+
+
+%% Section 4
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ----------------------- CREATE MOORING STRUCTURE -----------------------
@@ -197,24 +237,34 @@ end
 % up memory.
 
 
-%% Creates a ``blank" mooring structure using
-%  the FP (Forward Parameters).
+%% Creates a "blank" mooring structure
+%  using the FP (Forward Parameters).
+
+% Add field to FP including the translated instrument types,
+% with no repetitions (see explanation in translateInstrTypes):
+FP.InstrumentList = unique(translateInstrTypes(instrmntTypes));
+
+% Create Mooring structure with metadata so far:
 Mooring = mkMooring(FP);
 
-% Set Mooring Directories
-Mooring.Figure_dir = Figure_dir;
-Mooring.Data_dir = Data_dir;
 
-
-%% Add ADCPs to Mooring
+%% Add all the data to the Mooring structure:
  
-% Middle ADCP
-Mooring = AddInstrumentToMooring(Mooring, ADCP_MID);
-
-% Bottom ADCP
-Mooring = AddInstrumentToMooring(Mooring, ADCP_BOT);
-
-clear ADCP_TOP ADCP_MID
+% Loop over the types of instruments:
+for i1 = 1:length(instrmntTypes)
+    
+    auxInstrName = translateInstrTypes(instrmntTypes(i1));
+    auxInstrName = auxInstrName{1}; % convert from cell to char class
+    
+    % Now loop over each instrument of the i1'th type:
+    for i2 = 1:length(correctedData.(instrmntTypes{i1}))
+        
+        eval([auxInstrName ' = correctedData.(instrmntTypes{i1})(i2);']);
+        
+        Mooring = eval(['AddInstrumentToMooring(Mooring, ' auxInstrName ');']);
+    end
+    
+end
 
 
 %% Plot the mooring data - EXCEPT THAT THERMISTOR DATA WON'T BE
@@ -230,8 +280,9 @@ clear ADCP_TOP ADCP_MID
 % end
 
 
-%% Check the mooring:
-% Saves a .txt file (at Data_dir or Figure_dir ???) with some info:
+
+%% Saves a .txt file on the current
+% directory (moordir) with some info:
 Mooring = CheckMooring(Mooring);
 
 
@@ -241,7 +292,7 @@ if savemmp
 end
 
 
-%%
+%% Section 5
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ------------------ CREATES MMP STRUCTURE (GRIDDED DATA) ----------------
