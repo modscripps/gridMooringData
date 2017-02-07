@@ -4,24 +4,29 @@
 % information on this file for the mooring that you are interested
 % in and run this script.
 %
-% This script has 5 sections: (1) Data information the user needs
-% to specify, (2) Loading the data, (3) Looking/editing data, (4)
-% Creating the Mooring structure and (5) Creating the MMP structure.
+% This script has 7 sections:
+%   - (1) Data information the user needs to specify;
+%   - (2) Loading the data.
+%   - (3) Looking/editing the RAW data.
+%   - (4) Extra data formatting and knockdown correction.
+%   - (5) Looking at the edited data.
+%   - (6) Creating the Mooring structure.
+%   - (7) Creating the MMP structure.
+%
 % It is only required that you change the information from the
 % template on section (1).
 %
 % Section (3) has no code in the template. The purpose of this
-% section is so that the user add code to deal with processing
-% specific to a mooring. For example, if there is a compass offset
+% section is so that the user make sures the raw data looks good
+% and correct problems. For example, if there is a compass offset
 % that hasn't yet been corrected in the current meter processing,
 % then you may add this correction in section (3).
 %
-% Three important things left to do:
+% Important things to do:
 %
-%       1 - Option for not doing knockdown correction.
-%       2 - Option for adding station data, fit S from T
+%       1 - Option for adding station data, fit S from T
 %           and estimate salinity on thermistor data.
-%       3 - Option for putting station rather than mooring.
+%       2 - Option for putting station rather than mooring.
 %
 % Olavo Badaro Marques, Jan-2017.
 
@@ -39,25 +44,22 @@ close all
 
 %% Mooring identification and data directory
 
-moorid = 'T1';
+moorid = 'M2';
 
-% moordir = ['/Users/olavobm/Documents/MATLAB/olavo_research/' ...
-%            'TTIDE/data_asigot/Tmoorings_1to6/T1'];
-
-moordir = '/Volumes/Ahua/data_archive/WaveChasers-DataArchive/TTIDE/Moorings/T1/';
+moordir = '/Volumes/Ahua/data_archive/WaveChasers-DataArchive/TTIDE/Moorings/M2/';
 
 cd(moordir)
 
 
 %% Script with information of all instruments on the mooring:
 
-% dir_script_allinstruments = moordir;
-dir_script_allinstruments = ['/Users/olavobm/Documents/MATLAB/olavo_research/' ...
-           'TTIDE/data_asigot/Tmoorings_1to6/T1'];
+dir_script_allinstruments = ['/Users/olavobm/Documents/MATLAB/'  ...
+                             'olavo_research/TTIDE/scripts_mooring_processing/' ...
+                             'scripts_instruments/'];
 
-scriptname = 'TTIDE_T1_allinstruments.m';
+scriptname = 'TTIDE_M2_allinstruments.m';
 
-moorvarname = 'T1sensors';
+moorvarname = 'M2sensors';
 
 script_fullpath = fullfile(dir_script_allinstruments, scriptname);
 
@@ -70,9 +72,12 @@ FP.Project = 'TTIDE';
 FP.year = 2015;
 FP.SN = moorid;
 
-FP.depth = 1978;
-FP.lon = -148 - (59.2920/60);
-FP.lat = -41  - (20.0760/60);
+FP.depth = 1670;
+FP.lon = 148 + (54.297/60);
+FP.lat = -41 - (19.775/60);
+
+% FP.deploymenttime MUST BE in datenum format and UTC-referenced:
+FP.deploymenttime = [datenum(2015, 1, 15), datenum(2015, 3, 4)];
 
 
 %% Destination directories
@@ -86,17 +91,26 @@ FP.Figure_dir = Figure_dir;
 FP.Data_dir = Data_dir;
 
 
-%% Grid data will be interpolated on in the MMP structure:
+%% Grid where data will be interpolated on (MMP structure). Note
+% the time endpoints of the grid MUST BE contained in
+% FP.deploymenttime (the dates, not the actual values, since one
+% is given in datenum and yday). Otherwise, it is likely to get
+% errors if there are no pressure-recording instruments and
+% knockdown correction can not be applied:
 
 FPforMMP = FP;
 
-ydaybeg = 20;
-ydayend = 60;
+ydaybeg = 14.3;
+ydayend = 62;
 dtmin = 10;          % time interval in minutes
 
 FPforMMP.yday = ydaybeg : dtmin/60/24 : ydayend;
 
 FPforMMP.z = 0 : 2 : FP.depth;
+
+% Maximum length of gaps that can be interpolate through:
+FPforMMP.MaxTimesDZ = 3;
+FPforMMP.MaxTimesDT = 3;
 
 
 %% Set up variables, flags and labels:
@@ -157,6 +171,22 @@ for i1 = 1:length(instrmntTypes)
 end
 
 
+
+%% Section 3
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+%  ---- THIS IS WHERE YOU SHOULD ADD CODE TO PLOT OR EDIT THE RAW DATA ----
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+
+
+%% Section 4
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+%  -------- DATA IS FORMATTED AND CORRECTED FOR MOORING KNOCKDOWNS --------
+%  ------------------------------------------------------------------------
+%  ------------------------------------------------------------------------
+
 %% After loading the data, there is few minor processing
 % that still needs to be done. Each type of instrument/data
 % needs something different:
@@ -181,7 +211,6 @@ for i1 = 1:length(instrmntTypes)
     
 end
 
-% I probably want to erase loadedData to free up space
 
 %% Generate depth-perturbation grid for mooring knockdown correction.
 % Based on vertical displacements from instruments that measure
@@ -190,6 +219,19 @@ end
 
 interpObj = mooring_zperturbgrid(FP, moorsensors, editedData);
 
+% If function aboved returned NaN, then we create an interObj that works
+% as if there is NO knockdown at all. No correction is applied. This is
+% a complicated way of transforming a nominal depth scalar into a vector
+% where the scalar is repeated in every entry. However, this is suitable
+% because this fits in the correctKnockDownZ.m:
+if ~isa(interpObj, 'interp1class') && isnan(interpObj) 
+    
+    interpObj = interp1class({[FP.deploymenttime],  ...
+                              [FP.deploymenttime]}, ...
+                             {[0, 0], [FP.depth, FP.depth]});
+    
+end
+
 % Create common time for interpolating 
 mintimeoverlap = max(cellfun(@min, interpObj.xarrays));
 maxtimeoverlap = min(cellfun(@max, interpObj.xarrays));
@@ -197,35 +239,22 @@ timestep = 2/(24*60);  % 2 minutes
 
 timegrid = mintimeoverlap : timestep : maxtimeoverlap;
 
-
-
-% THERE MUST BE AN OPTION FOR NOT RUNNING THIS FUNCTION,
-% which means that I would have to create depth vectors
-% for the instruments that do not measure pressure!!!
+% Correct the depth for instruments that do not measure
+% pressure. From now on, their variables are interpolated
+% onto timegrid:
 correctedData = correctKnockDownZ(interpObj, moorsensors, editedData, timegrid);
 
 
-% % Interp correction to data timestamp:
-% for i1 = 1:length(instrmntTypes)
-%     
-%     % Now loop over each instrument of the i1'th type:
-%     for i2 = 1:size(moorsensors.(instrmntTypes{i1}), 1)
-%         correctedData = interpstructfields(correctedData, f, tgiven, tinterp);
-%     end
-%     
-% end
 
-
-
-%% Section 3
+%% Section 5
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
-%  ------- THIS IS WHERE YOU CAN ADD CODE TO PLOT OR EDIT THE DATA --------
+%  ---- THIS IS ANOTHER PLACE WHERE YOU MIGHT WANT TO LOOK AT THE DATA ----
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 
 
-%% Section 4
+%% Section 6
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ----------------------- CREATE MOORING STRUCTURE -----------------------
@@ -292,7 +321,7 @@ if savemmp
 end
 
 
-%% Section 5
+%% Section 7
 %  ------------------------------------------------------------------------
 %  ------------------------------------------------------------------------
 %  ------------------ CREATES MMP STRUCTURE (GRIDDED DATA) ----------------
@@ -304,7 +333,7 @@ end
 % instruments to a common depth-time grid:
 
 % Make the Structure
-MMP = mkMMP(Mooring, FP);
+MMP = mkMMP(Mooring, FPforMMP);
 MMP.UID = UID;
 
 
@@ -326,4 +355,3 @@ if savemmp
     MMP.MakeInfo = ['Structure made on ' date ', with ' mfilename '.m'];
     fileid = saveDATA( MMP );
 end
-
