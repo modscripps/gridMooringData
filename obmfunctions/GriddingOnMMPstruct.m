@@ -209,15 +209,11 @@ if ~isfield(GP, 'trim' )
     GP.trim = false;  % no trimming
 end
 
-% -------------------------------------------------
+% Default value to first interpolate in time, then in depth:
 if ~isfield(GP, 'rcinterp')
     GP.rcinterp = [2, 1];
 end
 
-% Should check the dimensions of the data (VarNameList)
-% and throw warning if you try, for example, to
-% interpolate in depth a single thermistor data.
-% -------------------------------------------------
 
 
 % Check the existence of parameters (MaxTimesDZ and MaxTimesDT) defining

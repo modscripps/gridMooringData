@@ -24,14 +24,17 @@ end
 if ~exist( 'FP', 'var' )
     FP = struct;
 end
+
 %% FP.yday (or Mooring.yday_grid)
 if ~isfield( FP, 'yday')
     FP.yday  = Mooring.yday_grid;
 end
+
 %% FP.z (or Mooring.z_grid)
 if ~isfield( FP, 'z')
     FP.z     = Mooring.z_grid;
 end
+
 %% FP.label
 if ~isfield( FP, 'label')
     FP.label  = '';

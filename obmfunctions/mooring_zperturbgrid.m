@@ -15,9 +15,11 @@ function interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
 %    - interpObj: an object of class interp1general, which is defined and
 %                 created by the m-file interp1general.m.
 %
-% Function MOORING_ZPERTURBGRID.... The knockdown correction itself is
-% done by the function correctKnockDownZ.m, which takes as input
-% the interpObj variable output of MOORING_ZPERTURBGRID.
+% Function MOORING_ZPERTURBGRID calls interp1general.m to create
+% an object to interpolate for the depth perturbed by knockdown.
+% The knockdown correction itself is done by the function
+% correctKnockDownZ.m, which takes as input the interpObj output
+% of MOORING_ZPERTURBGRID.
 %
 % Olavo Badaro Marques, 07/14/2016.
 
@@ -34,9 +36,14 @@ instr_presrecords = {'RBRConcerto', 'SBE37', 'RDIadcp'};
 instrP = intersect(instr_presrecords, fieldnames(moorsensors));
 
 if isempty(instrP)
-    warning(['Mooring ' FP.SN ' has no instruments of the types in ' ...
-             'the variable instr_presrecords, those we want ' ...
-             'to get pressure from. No knockdown correction applied.'])
+    
+    warning(['Mooring ' FP.SN ' has no instruments of the types '   ...
+             '' strjoin(instr_presrecords, ', ') ', those we can ' ...
+             'get pressure from. Knockdown correction can  NOT ' ...
+             'be applied.'])
+         
+	% Return NaN as output:
+    interpObj = NaN;
          
 else
     %% Now we loop through the instrument types in instrP, then
@@ -52,14 +59,12 @@ else
     for i = 1:length(instrP)
         ninstr(i) = size(moorsensors.(instrP{i}), 1);
     end
-
+    
     % ----------------------------------------------------
-    % TO DO:
-    % if sum(ninstr)==1, I can't make knockdown correction
-    % as it is done, I could however do something if, for 
-    % example, the mooring consists of an ADCP hundred meter
-    % from the bottom with thermistors below, though it is
-    % likely the displacements are not big.
+    % Check whether instruments that are expected to
+    % measure pressure really did it. Otherwise, it is
+    % not going to work. If they do NOT measure pressure,
+    % it should return NaN
     % ----------------------------------------------------
     
     % ----------------------------------------------------
@@ -69,8 +74,8 @@ else
     % ----------------------------------------------------
     
     % Only do knockdown correction if there is at
-    % least 2 pressure-recording instruments:
-    if sum(ninstr)>1
+    % least 1 pressure-recording instruments:
+    if sum(ninstr)>0
         
         % Pre-allocate space for the two cell arrays:
         nrecords = sum(ninstr);
@@ -123,7 +128,10 @@ else
         % -----------------------------------------------------------------
         % TO DO:
         % Actually, the bottom BC is good, but the surface BC is horrible.
-        % I might want to use depth rather than pressure.
+        % On the other hand, there is usually a pressure-recording
+        % instrument near the top, so th surface BC is not  going to give
+        % very wrong results.
+        % I probably want to use depth rather than pressure. 
         % -----------------------------------------------------------------
                
         

@@ -31,6 +31,16 @@ function correctedData = correctKnockDownZ(interpObj, moorsensors, editedData, t
 instr_correct = {'SBE56', 'SBE39', 'SBE37', 'RBRSolo', 'AA'};
 
 
+%% Types of instruments that usually measure pressure,
+% but may have been deployed without measuring it.
+% This list is used below to warn the user that, if these
+% are the only instruments to correct for knockdown, maybe
+% there is no correction to be applied, in the case they
+% measured pressure:
+
+instr_maybe_pres = {'SBE39', 'SBE37'};
+
+
 %% List of measured quantities that should be corrected by the
 % knowckdown. E.g. temperature and velocity are corrected, but
 % yearday is not:
@@ -44,11 +54,26 @@ instrC = intersect(instr_correct, fieldnames(moorsensors));
 
 %
 if isempty(instrC)
-    warning(['Mooring ' FP.SN ' has no instruments of the types in ' ...
-             'the variable instr_correct, those we want to correct ' ...
-             'for knockdown. No knockdown correction applied.'])
+    
+    warning(['Mooring has no instruments of the types ' ...
+             '' strjoin(instr_correct, ', ') ', the ones that may ' ...
+             'need to be corrected for knockdown. No knockdown ' ...
+             'correction applied.'])
+         
+	% Assign output:
+    correctedData = editedData;
          
 else
+    
+    % Print warning to the user if the only types of instruments
+    % to be corrected, are the ones listed in instr_maybe_pres:
+    if isequal(sort(instrC), sort(instr_maybe_pres))
+        
+        warning(['Instruments on mooring to correct for knockdown ' ...
+                 'are of the types ' strjoin(instr_maybe_pres, ', ') ''...
+                 '. The correction is only applied if they do not ' ...
+                 'already measure pressure'])
+    end
     
     % Check how many instruments of each type will be corrected:
     ninstr = NaN(length(instrC), 1);
@@ -142,7 +167,7 @@ else
                 
                 
             else
-                warning('WHAT IS GOING ON HERE???? I think this can almost never happen')
+                warning('Can this ever happen???? I think this can almost never happen')
                 keyboard
                 
             end
