@@ -1,35 +1,32 @@
-%% List of all instruments in mooring T4, TTIDE-2015.
+%% Template o all instruments script
+% Example for mooring T4, TTIDE-2015.
 %
-% This script creates a structure variable that is used by (not only) the
-% function ??????? of the mooring toolbox to put/grid all the mooring
-% data into one structure variable (the variables "Mooring" and "MMP").
+% This script creates a structure variable that is used by the
+% gridMooringData toolbox.
 %
 % Each structure field is a list of [ Serial Number (SN) , Nominal Depth ]
 % of all instruments deployed of a certain type in that mooring (e.g.
-% SBE 56). For each field, SNs are sorted from the top to the bottom of the
-% mooring. If for whatever reason you DO NOT want to include data from one
+% SBE56). For each field, SNs are sorted from the top to the bottom of the
+% mooring -- this is no a requirement, but it is good for readability. If
+% for whatever reason you DO NOT want to include data from one
 % instrument (e.g. because the instrument did not work), comment the
-% correspondent line, adding ... before the comment symbol (%).
+% correspondent line.
 %
-% Check the function ?????? to see all the possible instrument types (and
-% what variable names the code uses to reference them) supported by the
-% code. Change the same function to support new types of instruments.
+% Check the function loadMooringData.m to see all the possible instrument
+% types supported by the toolbox, as well as what variable names the code
+% uses to reference them.
 %
 % Nominal depths in a script like this usually come from the mooring
 % diagram. The nominal depths are ESSENTIAL for the instruments that
 % do NOT record pressure and are later used for processing the mooring
-% data. For the other types of instruments, the nominal depth values
-% in this script are not used in the processing.
+% data. If data comes from a profiling platform, insert NaN as the nominal
+% depth.
 %
-% For Tloggers only, some lines are skipped with a comment just to mark
-% spots where there are other instruments in between.
+% If there are lots of instruments of one type, I suggest skipping some
+% lines with a comment to improve readability.
+%
+% OBM, Feb/2017.
 
-% WHERE SHOULD THIS SCRIPT BE SAVED???????????????????
-% SHOULD THIS A FUNCTION???????????????????
-% THE NAME STRUCTURE OF THIS SCRIPT IS IMPORTANT!!! WHAT SHOULD IT BE????
-% WHAT ABOUT THE NAME OF THE VARIABLE CREATED????
-% THE NOMINAL DEPTH IS USEFUL FOR THE FUNCTION mooring_zperturbgrid
-% I should not have to copy all these comments for every mooring.
 
 %% RBR Solo (Temp. only)
 
@@ -41,9 +38,9 @@ T4sensors.RBRSolo = [76598, 172 ; ...
                      72115, 262 ; ...
                      72116, 282 ; ...
 %         
-                     72117, 322 ; ...
-                     72118, 342 ; ...
-                     72119, 362 ; ...
+%                      72117, 322 ; ...
+%                      72118, 342 ; ...
+%                      72119, 362 ; ...
                      72120, 382 ; ...
                      72147, 392 ; ...
 %
