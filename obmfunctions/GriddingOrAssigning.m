@@ -8,10 +8,20 @@ function [ygrid, lclose] = GriddingOrAssigning(dim, maxdist, x, y, xgrid, lclose
 %       - y: variable to grid
 %       - xgrid: grid to interpolate onto. MUST BE
 %                A VECTOR (or a even a scalar).
-%       - lclose (optional):
+%       - lclose (optional): this is a logical variable which is true for
+%                            the locations where data is interpolated.
 %
 %   outputs:
 %       - ygrid: gridded y.
+%
+%
+% Input lclose is useful for instruments that measure multiple variables
+% to be gridded. For example, a CTD measures multiple variables (S and T).
+% When this function is first called for interpolating S, this function
+% does not take lclose as input, but it creates one indicating the
+% locations on the grid where S is interpolated. When calling this function
+% again for gridding T, the lclose previously created is taken as an input,
+% such that T is interpolated on the same locations as S.
 %
 % Olavo Badaro Marques, 10/Jan/2017.
 
@@ -69,6 +79,13 @@ else
 end
 
 
+%% Create/Pre-allocate space for lclose if it is not given as input:
+
+if nargin<6
+    lclose = false(sizeoutput);
+end
+
+
 %% Loop over nx and grid or assign:
 
 for i = 1:ny
@@ -113,27 +130,44 @@ for i = 1:ny
         
     else
 
+        % If lclose is not given as input, compute lclose
+        % for this iteration (i.e. auxlclose) and assign
+        % it to the proper location in lclose:
         if nargin<6
             % First check what are the grid points that
             % are close to enough to the data:
             [~, distFromData] = dsearchn(xaux(:), xgrid(:));
 
-            lclose = (distFromData <= maxdist);
+            auxlclose = (distFromData <= maxdist);
+            
+            if dim==1
+                lclose(:, i) = auxlclose;
+            else
+                lclose(i, :) = auxlclose;
+            end
+         
+        % Otherwise, just pick auxlclose from the
+        % appropriate location in the input lclose:
+        else
+            
+            if dim==1
+                auxlclose = lclose(:, i);  % column if interpolating in depth
+            else
+                auxlclose = lclose(i, :);  % row if interpolating in time
+            end
+            
+            
         end
-
+        
         % Finally, interpolate data in time:
-        try
-        yaux_gridded = interp1(xaux, yaux, xgrid(lclose));
-        catch
-            keyboard
-        end
+        yaux_gridded = interp1(xaux, yaux, xgrid(auxlclose));
 
         % Assign interpolated variable to
         % the previously created array:
         if dim==1
-            ygrid(lclose, i) = yaux_gridded;
+            ygrid(auxlclose, i) = yaux_gridded;
         else
-            ygrid(i, lclose) = yaux_gridded;
+            ygrid(i, auxlclose) = yaux_gridded;
         end
    
     end 
