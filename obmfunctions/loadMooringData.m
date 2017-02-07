@@ -1,6 +1,6 @@
-function instrdata = load_mooring_datafile(moordir, instrtype, sn)
+function instrdata = loadMooringData(moordir, instrtype, sn)
 %
-% instrdata = LOAD_MOORING_DATAFILE(moordir, instrtype, sn)
+% instrdata = LOADMOORINGDATA(moordir, instrtype, sn)
 %
 %  inputs:
 %    - moordir: mooring directory where all the data are in subfolders.
