@@ -282,7 +282,7 @@ for ivar = 1 : length(GP.VarNameList)
         end
 
         
-        % This if exists because, on the second iteration of the
+        % This if exists because, starting on the second iteration of the
         % for loop, we want to operate on the result of the first
         % iteration of the for loop
         if idim==1
@@ -298,16 +298,13 @@ for ivar = 1 : length(GP.VarNameList)
             % Grid in time:
             else
                 
-%                 if isfield(DATA, 'efluorgain')
-%                     keyboard
-%                 end
-                
                 if ivar==1
-                
-                    [auxvargrid, lgridclose] = GriddingOrAssigning(2, maxdist,            ...
+                    
+                    [auxvargrid, lgridclose] = GriddingOrAssigning(2, maxdist,        ...
                                                                griddedDATA.yday,      ...
                                                                griddedDATA.(varname), ...
                                                                griddedDATA.yday_grid);
+                                                           
                 else
                     
                     auxvargrid = GriddingOrAssigning(2, maxdist,            ...
@@ -346,16 +343,10 @@ for ivar = 1 : length(GP.VarNameList)
             % Grid in time:
             else
                 
-%                 if isfield(DATA, 'efluorgain')
-%                     keyboard
-%                 end
                 auxvargrid = GriddingOrAssigning(2, maxdist,    ...
                                                  griddedDATA.yday, ...
                                                  auxvargrid,    ...
                                                  griddedDATA.yday_grid);
-%                 if isfield(DATA, 'efluorgain')
-%                     keyboard
-%                 end
             end
  
         end

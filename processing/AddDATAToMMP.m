@@ -63,7 +63,7 @@ if ~isfield(DATA, 'name')
     DATA.name = 'unknown';
 end
 
-%% save parametes to MMP
+%% Save parametes to MMP and print to screen
 MMP.(['para_' DATA.name]).OriginalTime = DATA.OriginalTime;
 MMP.(['para_' DATA.name]).VarNameList  = DATA.VarNameList;
 
@@ -72,34 +72,45 @@ MMP.(['para_' DATA.name]).VarNameList  = DATA.VarNameList;
 DATA
 DATA.VarNameList
 
-% --------------------------------------------
-% OBM - temporary!!!
+
+%% Old code that is here just in case:
+
+% OBM's note: it is required that fields yday and z are NOT coloumn and
+% row vectors, respectively. But since there is code in the toolbox to
+% format the data, these 2 if statements should not be necessary anymore:
 if iscolumn(DATA.yday)
-    DATA.yday = DATA.yday';
+    error(['field "yday" is a column vector. This should not happen ' ...
+           'by the time function ' mfilename ' is called.'])
+%     DATA.yday = DATA.yday';
 end
 
 if isvector(DATA.(DATA.VarNameList{1})) && iscolumn(DATA.z)
-    DATA.z = DATA.z';
+    error(['field "z" is a column vector and the data is a vector. ' ...
+           'from  vector. This should not happen by the time ' ...
+           'function ' mfilename ' is called.'])
+%     DATA.z = DATA.z';
 end
-% --------------------------------------------
 
-close all
+% OBM's note: this for loop is probably not necessary anymore
+% (for the same reason as the 2 if cases above):
 for idx_var = 1 : length(DATA.VarNameList)
+    
     varname = DATA.VarNameList{idx_var};
     
-    % if varname is not in MMP yet, create one
-    if ~isfield(DATA, varname)
-        DATA.(varname) = NaN( length(MMP.z), length(MMP.yday) );
-    end
-    
+    % If DATA.varname is a time series and is a column vector, transform
+    % it to a row vector (the mooring processing should makes sure that 
+    % no DATA.(varname) are column vectors at this point).
     if iscolumn(DATA.(varname))
-          
         DATA.(varname) = DATA.(varname)';
+        error(['Variable ' varname ' from instrument ' DATA.name ' '  ...
+               'from the Mooring structure is a column vector. Make ' ...
+               'sure that it is a row vector by the time function '   ...
+               '' mfilename ' is called'])
     end
 end
 
 
-%% Calls Grids the variables calling GriddingOnMMPstruct:
+%% Set some parameters for gridding data::
 
 PP.yday_grid    = MMP.yday;
 PP.z_grid       = MMP.z;
@@ -110,11 +121,42 @@ PP.OriginalTime = DATA.OriginalTime;
 PP.VarNameList  = DATA.VarNameList;
 
 
-if strncmp(DATA.name, 'ADCP', 4)
+%% Set parameter that defines the order of interpolation.
+% Remember that if data is a row vector, it is still
+% necessary to interpolate in the vertical, meaning the
+% depth point on the grid closest to the data must be found:
+
+% First characters that identify profiling platforms:
+list_profiling_chars = {'ADCP', 'MP'};
+
+% Loop over list_profiling_chars to see if
+% current DATA.name matches one of the list:
+lprofiler = false;
+indlist = 1;
+while indlist <= length(list_profiling_chars) && ~lprofiler
+    
+    laux = strcmp(DATA.name, list_profiling_chars{indlist});
+    
+    if ~laux
+        indlist = indlist + 1;  % go for the next iteration
+    else
+        lprofiler = true;   % == laux, we have a profiler,
+                            % which ends the while loop         
+    end
+    
+end
+
+% Choose order of interpolation (1 is over rows, 2
+% is over columns). If the instrument is a profiler
+% first do over rows. Otherwise, do the opposite:
+if lprofiler
     PP.rcinterp = [1, 2];
 else
     PP.rcinterp = [2, 1];
 end
+
+
+%% Finally grids the data:
 
 NewDATA = GriddingOnMMPstruct(DATA, PP);
 
