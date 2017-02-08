@@ -1,4 +1,4 @@
-%% Template o all instruments script
+%% Template of all instruments script
 % Example for mooring T4, TTIDE-2015.
 %
 % This script creates a structure variable that is used by the
