@@ -128,6 +128,7 @@ PP.VarNameList  = DATA.VarNameList;
 
 % First characters that identify profiling platforms:
 list_profiling_chars = {'ADCP', 'MP'};
+len_each_inlist = cellfun(@length, list_profiling_chars);
 
 % Loop over list_profiling_chars to see if
 % current DATA.name matches one of the list:
@@ -135,7 +136,7 @@ lprofiler = false;
 indlist = 1;
 while indlist <= length(list_profiling_chars) && ~lprofiler
     
-    laux = strcmp(DATA.name, list_profiling_chars{indlist});
+    laux = strncmp(DATA.name, list_profiling_chars{indlist}, len_each_inlist(indlist));
     
     if ~laux
         indlist = indlist + 1;  % go for the next iteration
