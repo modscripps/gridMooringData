@@ -301,6 +301,7 @@ for ivar = 1 : length(GP.VarNameList)
                                                                griddedDATA.(varname), ...
                                                                griddedDATA.yday_grid);
                                                            
+                
                 else
                     
                     auxvargrid = GriddingOrAssigning(2, maxdist,            ...
@@ -327,7 +328,7 @@ for ivar = 1 : length(GP.VarNameList)
             
             
         else
-           
+
             % Grid in depth:
             if GP.rcinterp(idim)==1
                 
@@ -343,6 +344,7 @@ for ivar = 1 : length(GP.VarNameList)
                                                  griddedDATA.yday, ...
                                                  auxvargrid,    ...
                                                  griddedDATA.yday_grid);
+                                             
             end
  
         end
@@ -350,7 +352,8 @@ for ivar = 1 : length(GP.VarNameList)
         
     end  % end for loop over dimension
     
-    %
+    
+    % Assing gridded variable to field of the output:
     griddedDATA.([varname '_grid']) = auxvargrid;
 
 end
