@@ -45,6 +45,11 @@ switch instrtype
 
         dataloaded = load(fullfile(moordir, 'SBE37', num2str(sn), ...
                                      ['SBE37_SN' num2str(sn) '.mat']));
+                  
+	case 'SBE39'
+
+        dataloaded = load(fullfile(moordir, 'SBE39', num2str(sn, '%04d'), ...
+                                     ['SBE39_SN' num2str(sn, '%04d') '.mat']));
                                  
 	case 'SBE56'
 
