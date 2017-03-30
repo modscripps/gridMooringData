@@ -106,12 +106,11 @@ switch datatype
         
     case 'RDIadcp'
 
-%         this does not make any sense! It seems the explanation might
-%         be the datenum2yday does not take NaN as input...
-%         datainstr.yday(find(isnan(ADCP_TOP.yday)))=datenum2yday(ADCP_TOP.dtnum(find(isnan(ADCP_TOP.yday))));
+        % no editing for RDIadcp
         
     case 'MP'
         
+        % no editing for McLane Profiler
         
     otherwise
         
