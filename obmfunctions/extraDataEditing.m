@@ -63,9 +63,12 @@ switch datatype
 
     case 'SBE39'
 
+        % Add a field called "time":
+        datainstr.time = datainstr.dtnum;
+        
         % Make sure vectors are row
         % vector and rename variables:
-        datainstr.dtnum = datainstr.dtnum(:)';
+        datainstr.time = datainstr.time(:)';
         datainstr.yday = datainstr.yday(:)';
         datainstr.t = datainstr.temp(:)';
         
@@ -74,21 +77,28 @@ switch datatype
         if isfield(datainstr, 'pr')
             
             if isempty(datainstr.pr)
-                datainstr.pr = NaN(size(datainstr.t));
+                datainstr.P = NaN(size(datainstr.t));
+                datainstr.z = nomdepth;
+            else
+                datainstr.P = datainstr.pr;
+                datainstr.z = sw_dpth(datainstr.P, lat);
             end
             
-            datainstr.P = datainstr.pr;
-            datainstr.z = sw_dpth(datainstr.P, lat);
-            
+            datainstr = rmfield(datainstr, 'pr');
         else
         % Otherwise assign nominal depth to depth:
         
+            datainstr.P = NaN(size(datainstr.t));
             datainstr.z = nomdepth;
             
         end
         
+        % Make sure they are row vectors:
+        datainstr.P = datainstr.P(:)';
+        datainstr.z = datainstr.z(:)';
+        
         datainstr = rmfield(datainstr, 'temp');
-        datainstr = rmfield(datainstr, 'pr');
+        
         
 	case 'SBE56'
 
@@ -114,6 +124,7 @@ switch datatype
         
     case 'RBRConcerto'
 
+        % no editing for RBRConcerto
      
     case 'AA'
         
