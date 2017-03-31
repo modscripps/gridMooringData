@@ -68,9 +68,26 @@ switch datatype
         datainstr.yday = datainstr.yday(:)';
         datainstr.t = datainstr.temp(:)';
         
-        datainstr = rmfield(datainstr, 'temp');
+        % If the SBE39 recorded pressure,
+        % change its name and compute depth:
+        if isfield(datainstr, 'pr')
+            
+            if isempty(datainstr.pr)
+                datainstr.pr = NaN(size(datainstr.t));
+            end
+            
+            datainstr.P = datainstr.pr;
+            datainstr.z = sw_dpth(datainstr.P, lat);
+            
+        else
+        % Otherwise assign nominal depth to depth:
         
-        % SBE39 THESE HAVE PRESSURE SENSORS SOMETIMES!!!
+            datainstr.z = nomdepth;
+            
+        end
+        
+        datainstr = rmfield(datainstr, 'temp');
+        datainstr = rmfield(datainstr, 'pr');
         
 	case 'SBE56'
 
