@@ -65,6 +65,7 @@ switch datatype
 
         % Make sure vectors are row
         % vector and rename variables:
+        datainstr.dtnum = datainstr.dtnum(:)';
         datainstr.yday = datainstr.yday(:)';
         datainstr.t = datainstr.temp(:)';
         
