@@ -27,7 +27,7 @@ function interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
 %% Type of pressure-recording instruments we want to look
 %  for to get their actual depth as a function of time:
 
-instr_presrecords = {'RBRConcerto', 'SBE37', 'RDIadcp'};
+instr_presrecords = {'RBRConcerto', 'SBE37', 'SBE39', 'RDIadcp'};
 
 
 %% Check which of the instruments in instr_presrecords are
@@ -59,13 +59,46 @@ else
     for i = 1:length(instrP)
         ninstr(i) = size(moorsensors.(instrP{i}), 1);
     end
-    
-    % ----------------------------------------------------
-    % Check whether instruments that are expected to
-    % measure pressure really did it. Otherwise, it is
-    % not going to work. If they do NOT measure pressure,
-    % it should return NaN
-    % ----------------------------------------------------
+   
+    % Get the pressure time series. If an instrument of type
+    % instr_presrecords did not measure pressure (for whatever
+    % reason) it should have a pressure array only with NaNs.
+    % In this case, this (useless) timeseries is excluded:
+    timepresStruct = emptyStructArray(instrP, 1);
+
+    for i1 = 1:length(instrP)
+
+        timepresStruct.(instrP{i1}) = emptyStructArray({'timepres'}, ninstr(i1));
+
+        indadd = 0;
+
+        % Loop through serial numbers of one instrument type:
+        for i2 = 1:ninstr(i1)
+
+            auxtimepres = extractTimePres(instrP{i1}, moordata.(instrP{i1})(i2));                    
+
+            if ~all(isnan(auxtimepres(:, 2)))
+
+                indadd = indadd + 1;
+                timepresStruct.(instrP{i1})(indadd).timepres = auxtimepres;
+
+            end
+
+        end
+
+        if indadd > 0
+            timepresStruct.(instrP{i1}) = timepresStruct.(instrP{i1})(1:indadd);
+        else
+            timepresStruct = rmfield(timepresStruct, instrP{i1});
+        end
+
+    end
+
+    % Update the list of instruments that measured
+    % pressure and how many of them exist:
+    instrP = fieldnames(timepresStruct);
+    ninstr = structfun(@length, timepresStruct);
+        
     
     % ----------------------------------------------------
     % TO DO:
@@ -89,7 +122,9 @@ else
             % Loop through serial numbers of one instrument type:
             for i2 = 1:ninstr(i1)
 
-                timepres = extractTimePres(instrP{i1}, moordata.(instrP{i1})(i2));
+%                 timepres = extractTimePres(instrP{i1}, moordata.(instrP{i1})(i2));
+               
+                timepres = timepresStruct.(instrP{i1})(i2).timepres;
 
                 % Get current indice to add the time/pressure records
                 % in the appropriate location in the variables
@@ -165,6 +200,7 @@ else
             set(gca, 'XTick', linspace(xlimits(1), xlimits(2), 7))
             dateformatstr = 'mmm/dd';      % datestr formats
             set(gca, 'XTickLabel', datestr(get(gca, 'XTick'), dateformatstr))
+            set(gca, 'FontSize', 14)
             xlabel(['UTC time label datestr format is ' dateformatstr])
             ylabel('Pressure/depth as taken from the instruments')
             title(['Pressure/depth records on mooring ' FP.SN], 'FontSize', 14)
@@ -222,7 +258,10 @@ function timepres = extractTimePres(instrtype, datastruct)
     %   outputs:
     %       - timepres: Nx2 matrix, where time is the first
     %                   column and pressure is the second.
-    % SHOULD BE DEPTH!!!!! (all of them have the z field!!!)
+    % SHOULD BE DEPTH!!!!! (all of them have the z field, though
+    % the z may be nominal depth if for some reason they did not
+    % measure pressure). It should return NaN if didn't really
+    % measure pressure.
 
     switch instrtype
 
@@ -237,6 +276,10 @@ function timepres = extractTimePres(instrtype, datastruct)
             timevar = datastruct.time;
             presvar = datastruct.P;
             
+        case 'SBE39'
+            
+            timevar = datastruct.dtnum;
+            presvar = datastruct.P;
             
         case 'RDIadcp'
         
