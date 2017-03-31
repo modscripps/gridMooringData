@@ -38,8 +38,8 @@ function listout = translateInstrTypes(listin)
 % entry of possibleInput, then output will be the same as input.
 % Note that elements of valueOutput MUST not have lower case letters:
 
-keyInput = {'RDIadcp', 'SBE37', 'SBE56', 'RBRSolo', 'RBRConcerto'};
-valueOutput = {'ADCP',   'SBE',   'SBE', 'RBRSOLO', 'RBRCONCERTO'};
+keyInput = {'RDIadcp', 'SBE37', 'SBE39', 'SBE56', 'RBRSolo', 'RBRConcerto'};
+valueOutput = {'ADCP',   'SBE',   'SBE',   'SBE', 'RBRSOLO', 'RBRCONCERTO'};
 
 instrumentMap = containers.Map(keyInput, valueOutput);
 
