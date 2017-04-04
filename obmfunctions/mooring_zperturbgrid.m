@@ -138,7 +138,7 @@ else
                 alltime{indfill} = timepres(:, 1);
                 allpres{indfill} = timepres(:, 2);
 
-                allnompd(indfill) = moorsensors.(instrP{i1})(i2, 2);
+                allnompd(indfill) = moorsensors.(instrP{i1}){i2, 2};
 
             end
 

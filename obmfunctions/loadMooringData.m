@@ -43,26 +43,35 @@ switch instrtype
 
     case 'SBE37'
 
-        dataloaded = load(fullfile(moordir, 'SBE37', num2str(sn), ...
-                                     ['SBE37_SN' num2str(sn) '.mat']));
+        dataloaded = load(fullfile(moordir, 'SBE37', sn, ...
+                                     ['SBE37_SN' sn '.mat']));
                   
 	case 'SBE39'
 
+        sn = str2double(sn);    % so we can gave the
+                                % appropriate number of digits.
+        
         dataloaded = load(fullfile(moordir, 'SBE39', num2str(sn, '%04d'), ...
                                      ['SBE39_SN' num2str(sn, '%04d') '.mat']));
                                  
 	case 'SBE56'
 
+        sn = str2double(sn);
+        
         dataloaded = load(fullfile(moordir, 'SBE56', num2str(sn, '%04d'), ...
                                  ['SBE056' num2str(sn, '%05d') '.mat']));
                                  
     case 'RBRSolo'
 
+        sn = str2double(sn);
+        
         dataloaded = load(fullfile(moordir, 'RBRSolo', ...
                                  ['RBRSolo_' num2str(sn, '%06d') '.mat']));
     
     case 'RBRConcerto'
 
+        sn = str2double(sn);
+        
         dataloaded = load(fullfile(moordir, 'RBRConcerto', ...
                                    num2str(sn, '%06d'), ...
                                    [num2str(sn, '%06d') '.mat']));
@@ -72,18 +81,16 @@ switch instrtype
         % We first use * and dir because the ADCP filenames have the
         % name of the project in it (in the place of *). Doing like
         % this makes its usage independent of project name:
-        dirpath = fullfile(moordir, 'ADCP', ['SN' num2str(sn)], ...
-                                                           'data_mat');
-        flullpath = fullfile(dirpath, ...
-                                ['SN' num2str(sn) '_*_AVE_10min.mat']);
+        dirpath = fullfile(moordir, 'ADCP', ['SN' sn], 'data_mat');
+        flullpath = fullfile(dirpath, ['SN' sn '_*_AVE_10min.mat']);
         flstrc = dir(flullpath);
         
         dataloaded = load(fullfile(dirpath, flstrc.name));
         
     case 'MP' % McLane Profiler
         
-        dirpath = fullfile(moordir, 'MP', ['sn' num2str(sn)], 'processed');
-        flullpath = fullfile(dirpath, ['MPall_*_sn' num2str(sn) '.mat']);
+        dirpath = fullfile(moordir, 'MP', ['sn' sn], 'processed');
+        flullpath = fullfile(dirpath, ['MPall_*_sn' sn '.mat']);
         flstrc = dir(flullpath);
         
         dataloaded = load(fullfile(dirpath, flstrc.name));
@@ -91,7 +98,7 @@ switch instrtype
     case 'AA'
         
         dirpath = fullfile(moordir, 'Aanderaa');
-        flullpath = fullfile(dirpath, ['AA' num2str(sn) '_*.mat']);
+        flullpath = fullfile(dirpath, ['AA' sn '_*.mat']);
         flstrc = dir(flullpath);
         
         dataloaded = load(fullfile(dirpath, flstrc.name));
@@ -122,6 +129,14 @@ if length(datastructname) == 1
     instrdata = dataloaded.(datastructname{1});
     
 else  
+    
+    % In case sn has been transformed into a
+    % number, transform it back to character:
+    if isa(sn, 'double')
+        sn = num2str(sn);
+    end
+    
+    % Print error message:
     error(['Data file of instrument ' instrtype ' / SN ' ...
-           num2str(sn) ' does not have only one variable.'])
+           sn ' does not have only one variable.'])
 end

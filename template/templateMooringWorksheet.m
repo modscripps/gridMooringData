@@ -164,7 +164,7 @@ for i1 = 1:length(instrmntTypes)
         % Call the load_mooring_datafile function:
         auxDataStruct = loadMooringData(moordir, ...
                                    instrmntTypes{i1}, ...
-                                   moorsensors.(instrmntTypes{i1})(i2, 1));
+                                   moorsensors.(instrmntTypes{i1}){i2, 1});
         
         % Assign auxDataStruct to loadedData:
         if i2 == 1
@@ -236,7 +236,7 @@ for i1 = 1:length(instrmntTypes)
         editedData.(instrmntTypes{i1})(i2) = ...
              extraDataEditing(loadedData.(instrmntTypes{i1})(i2), ...
                               instrmntTypes{i1}, ...
-                              FP.lat, moorsensors.(instrmntTypes{i1})(i2, 2));
+                              FP.lat, moorsensors.(instrmntTypes{i1}){i2, 2});
     end
     
 end
