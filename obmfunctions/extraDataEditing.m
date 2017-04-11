@@ -164,8 +164,9 @@ if length(datainstr.yday) ~= length(unique(datainstr.yday))
     % Get rid of values at repeated time stamps:
     [datainstr.yday, indmkuniq, ~] = unique(datainstr.yday);
     
-    datainstr.time = datainstr.time(indmkuniq);
     datainstr.t = datainstr.t(indmkuniq);
+    
+    datainstr.time = datainstr.time(indmkuniq);
 %     datainstr.z = datainstr.z(indmkuniq);
     
     % This should be done better....

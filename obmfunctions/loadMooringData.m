@@ -74,7 +74,7 @@ switch instrtype
         
         dataloaded = load(fullfile(moordir, 'RBRConcerto', ...
                                    num2str(sn, '%06d'), ...
-                                   [num2str(sn, '%06d') '.mat']));
+                             ['RBRConcerto_' num2str(sn, '%06d') '.mat']));
                                
     case 'RDIadcp'
 
