@@ -123,9 +123,18 @@ switch datatype
         datainstr = rmfield(datainstr, 'T');
         
     case 'RBRConcerto'
-
-        % no editing for RBRConcerto
-     
+        
+        % add yday:
+        datainstr.yday = datenum2yday(datainstr.time);
+        
+        datainstr.C(datainstr.C<=0) = NaN;
+        
+        datainstr.t = datainstr.T;
+        datainstr = rmfield(datainstr, 'T');
+        
+        % Compute depth from pressure and latitude:
+        datainstr.z = sw_dpth(datainstr.P, lat);
+        
     case 'AA'
         
         % Make sure vectors are row vector

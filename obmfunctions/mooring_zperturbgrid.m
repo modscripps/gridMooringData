@@ -267,8 +267,8 @@ function timepres = extractTimePres(instrtype, datastruct)
 
         case 'RBRConcerto'
             
-            timevar = datastruct.dnum;
-            presvar = datastruct.p;
+            timevar = datastruct.time;
+            presvar = datastruct.P;
                               
             
         case 'SBE37'
