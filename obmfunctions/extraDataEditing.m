@@ -124,15 +124,22 @@ switch datatype
         
     case 'RBRConcerto'
         
+        % Make sure variables are row vectors:
+        datainstr.time = datainstr.time(:)';
+        
         % add yday:
         datainstr.yday = datenum2yday(datainstr.time);
         
+        %
+        datainstr.C = datainstr.C(:)';
         datainstr.C(datainstr.C<=0) = NaN;
         
         datainstr.t = datainstr.T;
+        datainstr.t = datainstr.t(:)';
         datainstr = rmfield(datainstr, 'T');
         
         % Compute depth from pressure and latitude:
+        datainstr.P = datainstr.P(:)';
         datainstr.z = sw_dpth(datainstr.P, lat);
         
     case 'AA'
