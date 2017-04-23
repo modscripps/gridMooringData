@@ -78,11 +78,12 @@ for idx_var = 1 : length( FP.VarNames )
         gd  = find( ~isnan( xin ) );
                 
         if length( gd ) > 0.3*length(xin)
-            [NAME, FREQ, TIDECON, OUT] = T_TIDE( xin, 'interval', ...
+            [NAME, FREQ, TIDECON, OUT] = t_tide( xin, 'interval', ...
                 delta_hour, 'start time', TIME(1), 'output', 'none' );
             
             %% Now predict for single tidal constituent
-            idx = find_in_NAME( NAME, MMP.FreqBand );
+            %             idx = find_in_NAME( NAME, MMP.FreqBand );
+            idx = find(strcmp(cellstr(NAME),MMP.FreqBand)==1);
             xout = t_predic(TIME, NAME(idx,:), FREQ(idx), TIDECON(idx,:) );
             MMP.([varname MMP.FreqBand])(iz, :) = xout;
         end

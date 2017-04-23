@@ -16,7 +16,7 @@ disp( ['Calling function ' mfilename])
 
 
 %% step (1) calculate modes
-CTD  = IW.CTD;
+CTD  = IW;
 CTD.FreqBand = IW.FreqBand;
 CTD  = AddModesToCTD_multi(CTD, FP);
 

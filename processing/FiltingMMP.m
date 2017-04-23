@@ -41,7 +41,7 @@ end
 MMP.para_filter = FP;
 
 %% Form the filter parameters: a, b
-FP.samplefreq  = 1 / nanmean(diff(MMP.(FP.RefTime)));
+FP.samplefreq  = 1 / nanmedian(diff(MMP.(FP.RefTime)));
 fn             = FP.samplefreq/2;    %nyquist
 fc1            = FP.CentralFreq*(1-FP.bandwidth/2);
 fc2            = FP.CentralFreq*(1+FP.bandwidth/2);

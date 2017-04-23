@@ -26,7 +26,7 @@ if ~isfield( FP, 'Figure_name' )
 end
 
 %%
-ch = figure(97), clf, orient tall,
+ch = figure(97); clf, orient tall,
 hd = MySubplot(0.1, 0.05, 0.04, 0.04, 0.1, 0.03, 1, 3);
 set(hd, 'fontsize', 12, 'fontweight', 'bold', 'linewidth', 1.0 );
 
@@ -48,7 +48,7 @@ for idx = 1 : length(VarNames)
     data = IW.(varname);
     
     pcolor( IW.yday, IW.z, data), shading flat
-    caxis([-MAX MAX])
+    caxis([-MAX MAX]); colorbar; colormap(redblue);
     %colormap( bluered0 )
     
     set(gca, 'ydir', 'reverse')
@@ -93,6 +93,7 @@ set(gca, 'position', pos )
     
 
 %% print 
+maxfigure;
 FigName = fullfile( FP.Figure_dir, FP.Figure_name );    
 print('-depsc', '-r200', FigName);
 eps2pdf([FigName '.eps']);

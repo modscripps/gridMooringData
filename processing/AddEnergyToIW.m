@@ -116,8 +116,8 @@ end
 IW.e  = IW.ke + IW.pe;
 
 %% integrated KE and PE
-IW.KE = nansum(IW.ke, 1) * dz /1000; % J -> kJ
-IW.PE = nansum(IW.pe, 1) * dz /1000;
+IW.KE = nansum(IW.ke) * dz /1000; % J -> kJ
+IW.PE = nansum(IW.pe) * dz /1000;
 
 %% where all nans, set as nan
 %idx_nan = all( isnan(IW.ke) );
