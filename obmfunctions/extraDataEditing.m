@@ -54,10 +54,9 @@ switch datatype
         datainstr.C = datainstr.C(:)';
         datainstr.C(datainstr.C<=0) = NaN;
         
-        % Compute salinity (including a factor of 10 to get
-        % the units right) and potential density (referenced
-        % to the surface):
-        datainstr.s = sw_salt(10*datainstr.C ./ sw_c3515, datainstr.t, datainstr.z);
+        % Compute salinity and potential density
+        % (referenced to the surface):
+        datainstr.s = sw_salt(datainstr.C ./ sw_c3515, datainstr.t, datainstr.P);
         datainstr.sgth = sw_pden(datainstr.s, datainstr.t, datainstr.P, 0) - 1000;
 
 
@@ -141,6 +140,12 @@ switch datatype
         % Compute depth from pressure and latitude:
         datainstr.P = datainstr.P(:)';
         datainstr.z = sw_dpth(datainstr.P, lat);
+        
+        % Compute salinity and potential density
+        % (referenced to the surface):
+        datainstr.s = sw_salt(datainstr.C ./ sw_c3515, datainstr.t, datainstr.P);
+        datainstr.sgth = sw_pden(datainstr.s, datainstr.t, datainstr.P, 0) - 1000;
+        
         
     case 'AA'
         
