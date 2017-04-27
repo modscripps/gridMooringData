@@ -1,0 +1,1 @@
+function J = bluered(m)if nargin < 1, m = size(get(gcf,'colormap'),1); endJ=redblue(m);J=flipud(J);

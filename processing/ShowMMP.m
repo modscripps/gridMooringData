@@ -51,6 +51,12 @@ for idx_var = 1 : NumOfPanels
     %% shading 
     shading flat
     set(gca, 'ydir', 'reverse' )
+    
+    if ~isempty(find(strcmp(varname,{'u','v','eta'})))
+        colormap(gca,bluered); 
+        eval(['clim = max([abs(nanmin(MMP.',varname,'(:))),nanmax(MMP.',varname,'(:))]);']);
+        caxis(clim*0.75.*[-1 1]);
+    end
 
     %% x, y, and title  
     if idx_var == NumOfPanels
@@ -72,4 +78,5 @@ linkaxes(ax);
 xlim([(min(MMP.yday)) (max(MMP.yday))])
 ylim([(min(MMP.z))    (max(MMP.z))])
 
+maxfigure;
 return

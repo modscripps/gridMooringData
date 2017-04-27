@@ -95,7 +95,7 @@ for c = 1 : length(IW.yday)
         eta = interp1( IW.z(igd), eta(igd), IW.z );
     end
     
-    phat  = rhoo * nancumsum(n2.*eta).*dz;
+    phat  = -rhoo * nancumsum(n2.*eta).*dz;
     psurf = -nanmean(phat);
     p     = phat + psurf;
     IW.p(:, c) = p;
@@ -152,8 +152,8 @@ end
 
 
 %% vertically integrated Fu and Fv
-IW.Fu = nansum(IW.up, 1) .* dz / 1000; % W -> kW
-IW.Fv = nansum(IW.vp, 1) .* dz / 1000;  
+IW.Fu = nansum(IW.up) .* dz / 1000; % W -> kW
+IW.Fv = nansum(IW.vp) .* dz / 1000;  
 
 %% where all nans, set as nan
 %idx_nan = all( isnan(IW.up) );

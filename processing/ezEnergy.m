@@ -49,7 +49,7 @@ for idx = 1 : 3
     data = IW.(varname);
     
     pcolor( IW.yday, IW.z, data), shading flat
-    caxis([0 MAX])
+    caxis([0 MAX]); colorbar;
     set(gca, 'ydir', 'reverse')
     xlim([nanmin(IW.yday) nanmax(IW.yday)])
     ylim([nanmin(IW.z) nanmax(IW.z)])
@@ -91,7 +91,8 @@ pos(3) = xlen;
 set(gca, 'position', pos );
     
 
-%% print 
+%% print
+maxfigure;
 FigName = fullfile( FP.Figure_dir, FP.Figure_name );    
 print('-depsc', '-r200', FigName);
 eps2pdf([FigName '.eps']);
