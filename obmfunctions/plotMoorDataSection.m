@@ -1,27 +1,28 @@
-function plotMoorDataSection(correctedData, varcell, lfakeinterp)
-% PLOTMOORDATASECTION(correctedData, varcell, lfakeinterp)
+function hfigs = plotMoorDataSection(correctedData, varcell)
+% hfigs = PLOTMOORDATASECTION(correctedData, varcell)
 %
 %   inputs:
-%       - correctedData:
-%       - varcell:
-%       - lfakeinterp: logical variable, where true does a fake
-%                      interpolation (see below). Default is false.
+%       - correctedData: structure where each field is a structure (array)
+%                        with data from a certain instrument type.
+%       - varcell: cell array with variables to be plotted.
 %
-% ........ Input correctedData is the output of extraDataEditing.m, in
-% other words, this input has the fromatted mooring data, but separate for
-% each instrument.
+%   outputs:
+%       - hfigs: vector of figure handles.
 %
-% Lots of things still to be added.
+% Make time-depth pcolor plots of the mooring data (one plot/figure per
+% variable). Input correctedData is the output of extraDataEditing.m. In
+% other words, this input has the formatted mooring data, that is separated
+% for each instrument on the mooring.
 %
 % Olavo Badaro Marques, 05/May/2017.
 
 
 %% Types of instruments supported by this function:
 
-list_instr = {'SBE56', 'SBE39', 'SBE37', ...
-              'RBRSolo', 'RBRConcerto', ...
-              'AA', 'RDIadcp', 'MP'};
-
+% list_instr = {'SBE56', 'SBE39', 'SBE37', ...
+%               'RBRSolo', 'RBRConcerto', ...
+%               'AA', 'RDIadcp', 'MP'};
+          
           
 %% Variables supported by this function:
 
@@ -60,32 +61,62 @@ if ~exist('varcell', 'var') || isempty(varcell)
 end
 
 
-%%
+%% Pre-allocate 
 
-for i1 = 1:length(varcell)
+Nfigs = length(varcell);
+
+hfigs = gobjects(1, Nfigs);
+
+
+%% Make plots:
+
+% Loop over variables to plot (one plot per variable):
+for i1 = 1:Nfigs
     
-    figure
+    %
+    hfigs(i1) = figure;
+    
         hold on
         
-        %
-        auxinstrlist = var2instr(varcell{i1});
-    
-        % Loop over the instruments that
+        % Use the map variable to see which instruments
         % measure variable varcell{i1}:
-        for i2 = 1:length(auxinstrlist)
-            
-            auxInstr = auxinstrlist{i2};
-            
-            pcolor(correctedData.(auxInstr).yday, ...
-                   correctedData.(auxInstr).z, ...
-                   correctedData.(auxInstr).varcell{i1});
+        auxInstrFromVar = var2instr(varcell{i1});
+    
+        % From auxInstrFromVar, select only those that
+        % are present on the mooring data structure:        
+        auxInstrList = intersect(fieldnames(correctedData), auxInstrFromVar);
         
+        
+        % Loop over the instruments that measure variable
+        % varcell{i1} and add it to the plot:
+        for i2 = 1:length(auxInstrList)
+            
+            auxInstr = auxInstrList{i2};
+            
+            nInstr = length(correctedData.(auxInstr));
+            
+            for i3 = 1:nInstr
+                
+                pcolor(correctedData.(auxInstr)(i3).yday, ...
+                       correctedData.(auxInstr)(i3).z, ...
+                       correctedData.(auxInstr)(i3).(varcell{i1}));
+            end
+            
         end
         
+        % Edit plot appearance:
         shading flat, axis ij
         box on
         set(gca, 'FontSize', 14)
+        colorbar
+        title(varcell{i1})
         
-    
-    
+end
+
+
+%% If no output is given, erase the variable such that
+% the output variable is not printed on the screen:
+
+if nargout==0
+    clear hfigs
 end
