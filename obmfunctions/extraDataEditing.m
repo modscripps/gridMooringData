@@ -43,11 +43,25 @@ switch datatype
         
         datainstr = rmfield(datainstr, 'T');
         
-        % MAKE SURE THAT SBE37 HAS MEASURED PRESSURE!!!
+        % If the SBE37 had a pressure sensor, use it.
+        % Otherwise use nominal depth.
+        if isfield(datainstr, 'P')
+            
+            if isempty(datainstr.P)
+                datainstr.P = NaN(size(datainstr.t));
+                datainstr.z = nomdepth;
+            else
+                datainstr.P = datainstr.P(:)';
+                datainstr.z = sw_dpth(datainstr.P, lat);
+            end
+            
+        else
+        % Otherwise assign nominal depth to depth:
         
-        % Compute depth from pressure:
-        datainstr.P = datainstr.P(:)';
-        datainstr.z = sw_dpth(datainstr.P, lat);
+            datainstr.P = NaN(size(datainstr.t));
+            datainstr.z = nomdepth;
+            
+        end
                        
         % NaN conductivities less than or equal to 0
         % (otherwise there might be complex density values):
