@@ -111,12 +111,7 @@ else
                         nomdepths(indnext) = editedData.(instrC{i1})(i2).z;
                         posnomdepths{indnext, 1} = instrC{i1};
                         posnomdepths{indnext, 2} = i2;
-                        
-                        if strcmp(instrC{i1}, 'SBE37')
-                            wanrning('!!!!!')
-                            keyboard
-                        end
-                        
+                                                
                 end
             end
         end
