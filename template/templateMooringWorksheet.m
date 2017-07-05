@@ -22,11 +22,8 @@
 % that hasn't yet been corrected in the current meter processing,
 % then you may add this correction in section (3).
 %
-% Important things to do:
-%
-%       1 - Option for adding station data, fit S from T
-%           and estimate salinity on thermistor data.
-%       2 - Option for putting station rather than mooring.
+% TO DO:
+%       1 - Option for putting station rather than mooring.
 %
 % Olavo Badaro Marques, Jan-2017.
 
