@@ -96,10 +96,22 @@ for i1 = 1:Nfigs
             nInstr = length(correctedData.(auxInstr));
             
             for i3 = 1:nInstr
+                  
+                zplt = correctedData.(auxInstr)(i3).z;
+                    
+                auxdataplot = correctedData.(auxInstr)(i3).(varcell{i1});
                 
+                % Create a matrix in case data is a vector:
+                if size(auxdataplot, 1)
+                    
+                    zplt = [zplt-5; zplt];  %#ok<AGROW>
+                    auxdataplot = repmat(auxdataplot, 2, 1);
+                       
+                end
+
                 pcolor(correctedData.(auxInstr)(i3).yday, ...
-                       correctedData.(auxInstr)(i3).z, ...
-                       correctedData.(auxInstr)(i3).(varcell{i1}));
+                       zplt, auxdataplot);
+
             end
             
         end
