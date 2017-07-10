@@ -70,7 +70,7 @@ switch datatype
         
         % Compute salinity and potential density
         % (referenced to the surface):
-        datainstr.s = sw_salt(datainstr.C ./ sw_c3515, datainstr.t, datainstr.P);
+        datainstr.s = computeS(datainstr.C, datainstr.t, datainstr.P);
         datainstr.sgth = sw_pden(datainstr.s, datainstr.t, datainstr.P, 0) - 1000;
 
 
@@ -157,7 +157,7 @@ switch datatype
         
         % Compute salinity and potential density
         % (referenced to the surface):
-        datainstr.s = sw_salt(datainstr.C ./ sw_c3515, datainstr.t, datainstr.P);
+        datainstr.s = computeS(datainstr.C, datainstr.t, datainstr.P);
         datainstr.sgth = sw_pden(datainstr.s, datainstr.t, datainstr.P, 0) - 1000;
         
         
@@ -207,3 +207,36 @@ if length(datainstr.yday) ~= length(unique(datainstr.yday))
     % This should be done better....
 
 end
+
+end
+
+
+%% Nested function to compute Salinity from Conductivity.
+% This is written as a separate function, to be able to
+% in the same way for all instruments.
+%
+% It also includes an ATTEMPT of identification of the units of
+% Conductivity, because instruments return it in units that
+% usually differ by 10. This will probably NOT work where there is
+% significant freshwater (near estuaries). This may not work
+% if there are too many data points when the instrument was
+% out of the water.
+
+function s = computeS(c, t, p)
+
+    % Factor to multiply the conductivity, so it is in mS/cm.
+    if nanmedian(c) > 10
+        cfactor = 1;
+    else
+        cfactor = 10;
+    end
+    
+    % Using the Gibbs-SeaWater (GSW) Toolbox
+    s = gsw_SP_from_C(c .* cfactor, t, p);
+
+%     % Using the SeaWater toolbox (deprecated)
+%     s = sw_salt((c.*cfactor) ./ sw_c3515, t, p);
+
+end
+
+
