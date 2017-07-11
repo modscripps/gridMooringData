@@ -53,8 +53,11 @@ for i1 = 1:length(allInstr)
         if ~isempty(subsensors)
             submoorsensors.(allInstr{i1}) = subsensors;
         end
-        
-        
+
     end
     
+    % Remove empty fields
+    if isempty(submoorsensors.(allInstr{i1}))
+        submoorsensors = rmfield(submoorsensors, allInstr{i1});
+    end
 end
