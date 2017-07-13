@@ -75,7 +75,7 @@ else
         % Loop through serial numbers of one instrument type:
         for i2 = 1:ninstr(i1)
 
-            auxtimepres = extractTimePres(instrP{i1}, moordata.(instrP{i1})(i2));                    
+            auxtimepres = extractTimePres(instrP{i1}, moordata.(instrP{i1})(i2), FP.lat);                    
 
             if ~all(isnan(auxtimepres(:, 2)))
 
@@ -114,7 +114,7 @@ else
         nrecords = sum(ninstr);
         alltime = cell(1, nrecords);
         allpres = cell(1, nrecords);
-        allnompd = NaN(1, nrecords);
+        allnomdpth = NaN(1, nrecords);
 
         % Now we loop through instrument types:
         for i1 = 1:length(instrP)
@@ -138,17 +138,22 @@ else
                 alltime{indfill} = timepres(:, 1);
                 allpres{indfill} = timepres(:, 2);
 
-                allnompd(indfill) = moorsensors.(instrP{i1}){i2, 2};
+                allnomdpth(indfill) = moorsensors.(instrP{i1}){i2, 2};
 
             end
 
         end
 
         
+        %% Convert nominal depth pressure
+        
+        allnompres = sw_pres(allnomdpth, FP.lat);
+        
+        
         %% Add surface/bottom pressure "boundary conditions":
         
         % Nominal depths of the sensors/boundaries we know the pressure:
-        allnompd = [0, allnompd, FP.depth];
+        allnompres = [0, allnompres, sw_pres(FP.depth, FP.lat)];
         
         % Concatenate initial/end timestamps to the alltime cell array:
         alltime = [[max(cellfun(@min, alltime)); min(cellfun(@max, alltime))], ...
@@ -156,9 +161,9 @@ else
                    [max(cellfun(@min, alltime)); min(cellfun(@max, alltime))]];
                
         % Concatenate nominal depths to the allpres cell array:
-        allpres = [[allnompd(1); allnompd(1)], ...
+        allpres = [[allnompres(1); allnompres(1)], ...
                     allpres, ...
-                   [allnompd(end); allnompd(end)]];
+                   [allnompres(end); allnompres(end)]];
         
         % -----------------------------------------------------------------
         % TO DO:
@@ -170,6 +175,18 @@ else
         % -----------------------------------------------------------------
                
         
+        %% Convert all pressures (nominal and measured) to depths
+        
+        %
+        allnomdepths = sw_dpth(allnompres, FP.lat);
+        
+        %
+        alldepths = cell(size(allpres));
+        for i = 1:length(allpres)
+            alldepths{i} = sw_dpth(allpres{i}, FP.lat);
+        end
+        
+
         %% Plot the the pressure time series and take the MEDIAN for each
         % instrument, which is overlayed on the plot. Since these MEDIANS
         % are reference values used below it is nice to look at the plot
@@ -179,16 +196,16 @@ else
         % the instrument was deployed/recovered:
 
         % Pre-allocate space for median pressure:
-        medianpres = NaN(1, length(allnompd));
+        medianpres = NaN(1, length(allnomdepths));
 
         % Plot pressure records:
         figure
             hold on, axis ij
-            for i = 1:length(allnompd)
+            for i = 1:length(allnomdepths)
 
-                hp = plot(alltime{i}, allpres{i});
+                hp = plot(alltime{i}, alldepths{i});
 
-                medianpres(i) = nanmedian(allpres{i});   % compute mean
+                medianpres(i) = nanmedian(alldepths{i});   % compute median
 
                 thistimevec = alltime{i};
                 plot(thistimevec([1 end]), [medianpres(i) medianpres(i)], ...
@@ -202,31 +219,45 @@ else
             set(gca, 'XTickLabel', datestr(get(gca, 'XTick'), dateformatstr))
             set(gca, 'FontSize', 14)
             xlabel(['UTC time label datestr format is ' dateformatstr])
-            ylabel('Pressure/depth as taken from the instruments')
-            title(['Pressure/depth records on mooring ' FP.SN], 'FontSize', 14)
+            ylabel('Depth as taken from the instruments')
+            title(['Depth records on mooring ' FP.SN], 'FontSize', 14)
 
 
         %% Figure comparing median with planned nominal pressure/depth:
 
         % First define an axes limit to make the plot look nice:
-        limmaxaxes = max([max(allnompd) max(medianpres)]);
+        limmaxaxes = max([max(allnomdepths) max(medianpres)]);
         limmaxaxes = 1.10 * limmaxaxes;
 
         % Then plot the figure:
         figure
-            plot(allnompd, medianpres, '.k', 'MarkerSize', 22)
+            plot(allnomdepths, medianpres, '.k', 'MarkerSize', 22)
             hold on
             plot([0 limmaxaxes], [0 limmaxaxes], 'Color', [0.4 0.4 0.4])
             axis equal
             axis([0 limmaxaxes 0 limmaxaxes])
             grid on
-            xlabel('Nominal pressure/depth from mooring diagram')
+            xlabel('Nominal depth from mooring diagram')
             ylabel('Median computed from the data')
-
+            set(gca, 'FontSize', 14)
+          
+        
+        %% Plot difference between measured and nominal depths
             
+        [~, indsort] = sort(allnomdepths);
+        
+        figure
+            plot(medianpres(indsort) - allnomdepths(indsort), ...
+                                                    '.k', 'MarkerSize', 28)
+            grid on
+            set(gca, 'FontSize', 14)
+            ylabel('Depth difference [m]')
+            title('Measured - Nominal', 'FontSize', 18)
+            
+
         %% Create the general interpolation object:
         
-        interpObj = interp1class(alltime, allpres);
+        interpObj = interp1class(alltime, alldepths);
                 
         
     end
@@ -248,8 +279,8 @@ end    % end of the main function
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
-function timepres = extractTimePres(instrtype, datastruct)
-    % timepres = EXTRACTTIMEPRES(instrtype, datastruct)
+function timepres = extractTimePres(instrtype, datastruct, latitude)
+    % timepres = EXTRACTTIMEPRES(instrtype, datastruct, latitude)
     %
     %   inputs:
     %       - instrtype:
@@ -258,10 +289,9 @@ function timepres = extractTimePres(instrtype, datastruct)
     %   outputs:
     %       - timepres: Nx2 matrix, where time is the first
     %                   column and pressure is the second.
-    % SHOULD BE DEPTH!!!!! (all of them have the z field, though
-    % the z may be nominal depth if for some reason they did not
-    % measure pressure). It should return NaN if didn't really
-    % measure pressure.
+    % 
+    % A (supposedly) pressure-measuring instrument that did not
+    % measure pressure has a pressure variable with NaNs-only.
 
     switch instrtype
 
@@ -284,7 +314,9 @@ function timepres = extractTimePres(instrtype, datastruct)
         case 'RDIadcp'
         
             timevar = datastruct.dtnum;
-            presvar = datastruct.xducer_depth;
+            dtphvar = datastruct.xducer_depth;
+            
+            presvar = sw_pres(dtphvar, latitude);
             
     end
     
