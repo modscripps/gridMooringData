@@ -2,17 +2,23 @@ function loadedData = loadAllMoorData(moordir, moorsensors)
 % loadedData = LOADALLMOORDATA(moordir, moorsensors)
 %
 %   inputs:
-%       - moordir:
-%       - moorsensors:
+%       - moordir: mooring data parent directory.
+%       - moorsensors: structure with serial number and nominal
+%                      depths of moored instruments.
 %
 %   outputs:
-%       - loadedData
+%       - loadedData: mooring data structure with the loaded data.
+%
+% LOADALLMOORDATA loads the mooring data from the instruments in
+% moorsensors. It calls loadMooringData.m, which loads data for
+% each instrument individually, and organizes the mooring data
+% in a structure where each field name is a type of instrument.
+% Each field is a structure array with data from all moored
+% instruments of the corresponding type.
 %
 % Olavo Badaro Marques, 11/Jul/2017.
 
 
-
-          
 %% Load all the data to the workspace:
 
 instrmntTypes = fieldnames(moorsensors);

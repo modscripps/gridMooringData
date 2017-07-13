@@ -2,14 +2,25 @@ function editedData = extraEditMoorData(lat, loadedData, moorsensors)
 % editedData = EXTRAEDITMOORDATA(lat, loadedData, moorsensors)
 %
 %   inputs:
-%       - lat: latitude.
-%       - loadedData:
-%       - moorsensors:
+%       - lat: latitude (necessary to switch between depth and pressure).
+%       - loadedData: data structure with the loaded data.
+%       - moorsensors: structure with serial number and nominal
+%                      depths of moored instruments.
 %
 %   outputs:
-%       - editedData:
+%       - editedData: data structure similar to the input, but
+%                     formatted, following the toolbox standards.
 %
+% EXTRAEDITMOORDATA calls extraDataEditing.m, which formats the
+% loaded data structure following the toolbox standards. This
+% is only a necessary step because there are often NO standards
+% when people offload data from different instruments. For
+% example, it is not uncommon to see temperature saved as "t"
+% from some instruments, but as "temp" for others.
 %
+% Look into the called function to see the specifics.
+%
+% See also: extraDataEditing.m
 %
 % Olavo Badaro Marques, 11/Jul/2017.
 
