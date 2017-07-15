@@ -16,12 +16,18 @@ function loadedData = loadAllMoorData(moordir, moorsensors)
 % Each field is a structure array with data from all moored
 % instruments of the corresponding type.
 %
+% See also: loadMooringData.m, matchStructArray.m.
+%
 % Olavo Badaro Marques, 11/Jul/2017.
 
 
-%% Load all the data to the workspace:
+%% Get instrument types present in this mooring
 
 instrmntTypes = fieldnames(moorsensors);
+
+
+%% Loop over instruments in moorsensors, load the data
+% and appropriately assign it to the output variable
 
 loadedData = emptyStructArray(instrmntTypes, 1);
 

@@ -24,15 +24,15 @@ function editedData = extraEditMoorData(lat, loadedData, moorsensors)
 %
 % Olavo Badaro Marques, 11/Jul/2017.
 
-%%
+
+%% Get the instrument types for this mooring
 
 instrmntTypes = fieldnames(moorsensors);
 
 
-%%
-% I have to create a new empty structure because Matlab
-% does not allow substituting a sructure by another
-% one with different fields:
+%% Loop over instruments and edit each of them
+
+% Initialize output variable
 editedData = emptyStructArray(instrmntTypes, 1);
 
 % Loop over the types of instruments:
