@@ -65,11 +65,14 @@ else
     % reason) it should have a pressure array only with NaNs.
     % In this case, this (useless) timeseries is excluded:
     timepresStruct = emptyStructArray(instrP, 1);
+    lmoorsensUsed = emptyStructArray(instrP, 1);
 
     for i1 = 1:length(instrP)
 
         timepresStruct.(instrP{i1}) = emptyStructArray({'timepres'}, ninstr(i1));
 
+        lmoorsensUsed.(instrP{i1}) = false(ninstr(i1), 1);
+        
         indadd = 0;
 
         % Loop through serial numbers of one instrument type:
@@ -82,6 +85,9 @@ else
                 indadd = indadd + 1;
                 timepresStruct.(instrP{i1})(indadd).timepres = auxtimepres;
 
+                % Assign true to the instrument indices where we do have a
+                % pressure time series to use for knockdown correction
+                lmoorsensUsed.(instrP{i1})(i2) = true;
             end
 
         end
@@ -119,6 +125,10 @@ else
         % Now we loop through instrument types:
         for i1 = 1:length(instrP)
 
+            % Indices of the pressure-measuring
+            % instruments in moorsensUsed
+            inds_used_aux = find(lmoorsensUsed.(instrP{i1}));
+            
             % Loop through serial numbers of one instrument type:
             for i2 = 1:ninstr(i1)
 
@@ -133,23 +143,23 @@ else
                 % sum(ninstr) (== nrecords):
                 indfill = sum([0 ones(1, i1-1)] .* ...
                                     [1 (ninstr((1:length(instrP) < i1)))'] ) + i2;
-
+                
                 % Fill in variables:
                 alltime{indfill} = timepres(:, 1);
                 allpres{indfill} = timepres(:, 2);
 
-                allnomdpth(indfill) = moorsensors.(instrP{i1}){i2, 2};
+                allnomdpth(indfill) = moorsensors.(instrP{i1}){inds_used_aux(i2), 2};
 
             end
 
         end
 
-        
+
         %% Convert nominal depth pressure
         
         allnompres = sw_pres(allnomdpth, FP.lat);
         
-        
+
         %% Add surface/bottom pressure "boundary conditions":
         
         % Nominal depths of the sensors/boundaries we know the pressure:
@@ -160,7 +170,9 @@ else
                    alltime, ...
                    [max(cellfun(@min, alltime)); min(cellfun(@max, alltime))]];
                
-        % Concatenate nominal depths to the allpres cell array:
+        % Concatenate top and bottom pressures to the allpres cell array
+        % (these top and bottom are given/the boundary conditions, rather
+        % than from particular instruments):
         allpres = [[allnompres(1); allnompres(1)], ...
                     allpres, ...
                    [allnompres(end); allnompres(end)]];
