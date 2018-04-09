@@ -166,9 +166,10 @@ else
         allnompres = [0, allnompres, sw_pres(FP.depth, FP.lat)];
         
         % Concatenate initial/end timestamps to the alltime cell array:
-        alltime = [[max(cellfun(@min, alltime)); min(cellfun(@max, alltime))], ...
-                   alltime, ...
-                   [max(cellfun(@min, alltime)); min(cellfun(@max, alltime))]];
+        minmaxtimes4boundary = [min(cellfun(@min, alltime)); ...
+                                max(cellfun(@max, alltime))];
+               
+        alltime = [minmaxtimes4boundary, alltime, minmaxtimes4boundary];
                
         % Concatenate top and bottom pressures to the allpres cell array
         % (these top and bottom are given/the boundary conditions, rather
