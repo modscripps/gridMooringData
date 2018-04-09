@@ -114,15 +114,20 @@ classdef interp1class
             
             for i = 1:N
                 yonxi(i, :) = interp1(obj.xarrays{i}, ...
-                                        obj.yarrays{i}, xi);
+                                      obj.yarrays{i}, xi);
             end
             
-            % Now, for every xi, interpolate yonxi
-            % across the row space (at the yi locations):
+            % Find where there are NaNs and the columns with at least 1:
+            lnoNaN = ~isnan(yonxi);
+            
+            % Pre-allocate space for interpolated variable
             yinterp = NaN(length(yi), length(xi));
 
+            % Now, for every xi, interpolate yonxi
+            % across the row space (at the yi locations):
             for i = 1:length(xi)
-                yinterp(:, i) = interp1(obj.ybase, yonxi(:, i), yi);
+                yinterp(:, i) = interp1(obj.ybase(lnoNaN(:, i)), ...
+                                        yonxi(lnoNaN(:, i), i), yi);
             end
                         
         end
