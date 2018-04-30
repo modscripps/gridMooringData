@@ -130,8 +130,10 @@ else
             aux2 = posnomdepths{i1, 2};  % index of the instrument
             
             editedData.(aux1)(aux2).z = zcorrection(i1, :);
-                                                     
-            if length(timegrid)~=length(editedData.(aux1)(aux2).yday)
+
+            % If time vectors are not the same, then interpolate
+            % the dependent variables onto timegrid
+            if ~isequal(timegrid, editedData.(aux1)(aux2).yday)
                 
                 % Fill yday field Convert timegrid to yday:
                 editedData.(aux1)(aux2).yday = datenum2yday(timegrid); 
@@ -160,10 +162,23 @@ else
                     end    
                 end
                 
-                
+            % Otherwise do nothing
             else
-                warning('Can this ever happen???? I think this can almost never happen')
-                keyboard
+                
+% % %                 % This is a warning when the if statement was for checking
+% % %                 % the length of timegrid and the timestamps of the data.
+% % %                 % When the case of the else happened, I switched the if
+% % %                 % statement to check for isequal
+% % %                 warning(['Can this ever happen???? I think this ' ...
+% % %                          'can almost never happen.' ...
+% % %                          'Actually it can -- when the resolution ' ...
+% % %                          'varies around the value that it should be, ' ...
+% % %                          'such that the 2 time vectors are different ' ...
+% % %                          'but they have the same length (at least it ' ...
+% % %                          'happened for a SBE56). I''m changing the if ' ...
+% % %                          'statement for a isequal, but that could ' ...
+% % %                          'not be perfect if numbers are different ' ...
+% % %                          'because of double precision approximation.'])
                 
             end
         end
