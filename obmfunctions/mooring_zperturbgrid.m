@@ -3,8 +3,9 @@ function interpObj = mooring_zperturbgrid(FP, moorsensors, moordata)
 %
 %  inputs:
 %    - FP: forward parameters containing mooring information. The
-%          relevations fields are FP.SN (th id of the mooring) and
-%          FP.depth (the water depth at the mooring location).
+%          relevations fields are FP.SN (th id of the mooring),
+%          FP.lat (latitude) and FP.depth (the water depth at the
+%          mooring location).
 %    - moorsensors: struct variable with the serial number
 %                   of all sensors on the mooring.
 %    - moordata: struct variable with all the raw mooring data. In order
